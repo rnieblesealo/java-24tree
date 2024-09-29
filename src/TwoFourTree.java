@@ -4,6 +4,7 @@ public class TwoFourTree {
     int value1 = 0; // always exists.
     int value2 = 0; // exists iff the node is a 3-node or 4-node.
     int value3 = 0; // exists iff the node is a 4-node.
+
     boolean isLeaf = true;
 
     TwoFourTreeItem parent = null; // parent exists iff the node is not root.
@@ -95,9 +96,8 @@ public class TwoFourTree {
   TwoFourTreeItem root = null;
 
   public boolean addValue(int value) {
-    // Walk down the tree
+    // Case 1: We have no root
 
-    // Case: We have no root
     if (this.root == null) {
       this.root = new TwoFourTreeItem(value);
       return true;
@@ -108,61 +108,93 @@ public class TwoFourTree {
     TwoFourTreeItem current = this.root;
 
     // Walk down the tree
+
     while (true) {
 
-      // Case: The root is a 4-node
+      // Case 2: The root is a 4-node
 
       if (current.isRoot() && current.isFourNode()) {
+
+        // Cache the l, r, and middle values
+
         int leftValue = current.value1;
         int middleValue = current.value2;
         int rightValue = current.value3;
 
         // Cache the children
+
         TwoFourTreeItem leftChild = current.leftChild;
         TwoFourTreeItem centerLeftChild = current.centerLeftChild;
         TwoFourTreeItem centerRightChild = current.centerRightChild;
         TwoFourTreeItem rightChild = current.rightChild;
 
-        // Make a new 2-node the root and give it the middle value
+        // Make a new 2-node the root
+        // Assign it the middle value
+
         current = new TwoFourTreeItem(middleValue);
+        current.parent = null;
 
-        // Make this node's L and R children be 2-node with the left and right values
+        // Make l, r 2-nodes
+        // Give them the left and right values
+
         current.leftChild = new TwoFourTreeItem(leftValue);
+        current.leftChild.parent = current;
+
         current.rightChild = new TwoFourTreeItem(rightValue);
+        current.rightChild.parent = current;
 
-        // Make the left child bear the old 4-node's 2 leftmost children
+        // Make:
+        // l child of l -> left child of old 4-node
+        // r child of l -> center left child of old 4-node
+        // l child of r -> center right child of old 4-node
+        // r child of r -> right child of old 4-node
+
+        // Also set their parents correctly
+
         current.leftChild.leftChild = leftChild;
-        current.leftChild.rightChild = centerLeftChild;
+        leftChild.parent = current.leftChild;
 
-        // The right child therefore bears the old 2 rightmost children
+        current.leftChild.rightChild = centerLeftChild;
+        centerLeftChild.parent = current.leftChild;
+
         current.rightChild.leftChild = centerRightChild;
+        centerRightChild.parent = current.rightChild;
+
         current.rightChild.rightChild = rightChild;
+        rightChild.parent = current.rightChild;
+
+        // Done!
       }
 
-      // Case: We have a 4-node, but it isn't the root
+      // Case 3: Inner 4-node
 
       else if (current.isFourNode()) {
+        // Keep track of parent and its old state
+        TwoFourTreeItem parent = this.parent;
 
-        // Push the child's middle value to the parent, which could either be a 2-node
-        // or a 3-node
+        boolean parentWasTwoNode = false;
+        boolean parentWasThreeNode = false;
 
-        TwoFourTreeItem parent = current.parent;
+        // Push the middle value to the parent
 
         int middleValue = current.value2;
 
         if (parent.isTwoNode()) {
 
-          // If the parent is a 2-node, move the middle value up to it, making it a 3-node
-          // If the middle value comes from a left child, it should be the parent's
-          // leftmost val
-          // Vice-versa for rightmost
+          // Update prior state before changing it
+
+          parentWasTwoNode = true;
+
+          // Push middle val to left if containing node was left child
 
           if (current == parent.leftChild) {
             parent.value2 = parent.value1;
             parent.value1 = middleValue;
           }
 
-          else if (current == parent.RightChild) {
+          // Push middle val to right if containing node was a right child
+
+          else if (current == parent.rightChild) {
             parent.value1 = parent.value2;
             parent.value2 = middleValue;
           }
@@ -170,17 +202,27 @@ public class TwoFourTree {
 
         else if (parent.isThreeNode()) {
 
-          // Turn 3-node into 4-node by moving value up
-          // If middle val. from right child, make it rightmost of 4-node
-          // If from left, make it leftmost of 4-node
-          // If comes from either of the two middles, make it the middle value; this is an
-          // else case
+          // Update prior state before changing it
+
+          parentWasThreeNode = true;
+
+          // Push middle val to left if containing node was a left child
 
           if (current == parent.leftChild) {
             parent.value3 = parent.value2;
             parent.value2 = parent.value1;
             parent.value1 = middleValue;
           }
+
+          // Push middle val to middle if containing node was inner left or inner right
+          // child
+
+          else if (current == parent.centerLeftChild || current == parent.centerRightChild) {
+            parent.value3 = parent.value2;
+            parent.value2 = middleValue;
+          }
+
+          // Push middle val to right if containing node was a right child
 
           else if (current == parent.rightChild) {
             parent.value1 = parent.value2;
@@ -189,49 +231,164 @@ public class TwoFourTree {
           }
         }
 
-        // [ RESUME HERE ]
+        // Pushing middle value up increases amt. of values in parent
 
-        // Then split the current node
-        // To make this easier, do it with reference to the parent
+        parent.values++;
 
-        // Cache children
+        // Cache children of inner node
+
         TwoFourTreeItem leftChild = current.leftChild;
         TwoFourTreeItem centerLeftChild = current.centerLeftChild;
         TwoFourTreeItem centerRightChild = current.centerRightChild;
         TwoFourTreeItem rightChild = current.rightChild;
+
+        // Split the node into two new 2-nodes
+
+        int leftValue = current.value1;
+        int rightValue = current.value3;
+
+        TwoFourTreeItem newLeft = new TwoFourTreeItem(leftValue);
+        TwoFourTreeItem newRight = new TwoFourTreeItem(rightValue);
+
+        // Parent the new nodes properly
+
+        newLeft.parent = parent;
+        newRight.parent = parent;
+
+        if (parentWasTwoNode) {
+          boolean isLChild = parent.leftChild == current;
+          boolean isRChild = parent.rightChild == current;
+
+          if (isLChild) {
+            parent.leftChild = newLeft;
+            parent.centerLeftChild = newRight;
+          }
+
+          else if (isRChild) {
+            parent.centerLeftChild = newLeft;
+            parent.rightChild = newRight;
+          }
+        }
+
+        else if (parentWasThreeNode) {
+          boolean isLChild = parent.leftChild == current;
+          boolean isMChild = parent.centerLeftChild == current || parent.centerRightChild == current;
+          boolean isRChild = parent.rightChild == current;
+
+          if (isLChild) {
+            parent.leftChild = newLeft;
+
+            parent.centerRightChild = parent.centerLeftChild;
+
+            parent.centerLeftChild = newRight;
+          }
+
+          else if (isMChild) {
+            parent.centerLeftChild = newLeft;
+
+            parent.rightChild = parent.centerRightChild;
+
+            parent.centerRightChild = newRight;
+          }
+
+          else if (isRChild) {
+            parent.centerRightChild = newLeft;
+
+            parent.rightChild = newRight;
+          }
+        }
+
+        // Reattach children to the newly created 2-nodes properly
+
+        newLeft.leftChild = leftChild;
+        newLeft.leftChild.parent = newLeft;
+
+        newLeft.rightChild = centerLeftChild;
+        newLeft.rightChild.parent = newLeft;
+
+        newRight.leftChild = centerRightChild;
+        newRight.leftChild.parent = newRight;
+
+        newRight.rightChild = rightChild;
+        newRight.rightChild.parent = newRight;
+
+        // Go back to parent to continue traversal
+
+        current = parent;
       }
 
       // Case: We hit a leaf node
 
-      if (current.isLeaf()) {
-
-        // Case: We hit a leaf 2-node or 3-node
+      else if (current.isLeaf) {
 
         if (current.isTwoNode()) {
           // Make a 3-node from a 2-node, ordering the values appropriately
 
           if (value < current.value1) {
-            current = new TwoFourTreeItem(value, current.value1);
           }
 
           else {
-            current = new TwoFourTreeItem(current.value1, value);
           }
+
+          return true;
         }
 
         else if (current.isThreeNode()) {
           // Make a 4-node from a 3-node, ordering values appropriately
 
+          // [ RESUME HERE ]
+
+          // Also, anytime we're assigning something to current or parent, we're fucking
+          // up since these are just references
+
           if (value < current.value1) {
-            current = new TwoFourTreeItem(value, current.value1, current.value2);
+          }
+
+          else if (value >= current.value1 && value <= current.value2) {
+
           }
 
           else if (value > current.value2) {
-            current = new TwoFourTreeItem(current.value1, current.value2, value);
+
           }
 
-          else {
-            current = new TwoFourTreeItem(current.value1, value, current.value2);
+          return true;
+        }
+      }
+
+      // Case: We reach an inner 2-node or 3-node, so we must keep walking
+
+      else {
+        if (current.isTwoNode()) {
+
+          // 2-nodes are traversed like ordinary BST nodes
+
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else if (value >= current.value1) {
+            current = current.rightChild;
+          }
+        }
+
+        else if (current.isThreeNode()) {
+          // 3-nodes also follow similar logic, but if our value lies between value1 and
+          // value2, we go to the middle instead
+
+          // Note that in this implementation a 3-node's middle child is always stored at
+          // centerLeftChild
+
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else if (value >= current.value1 && value <= current.value2) {
+            current = current.centerLeftChild;
+          }
+
+          else if (value >= current.value2) {
+            current = current.rightChild;
           }
         }
       }
