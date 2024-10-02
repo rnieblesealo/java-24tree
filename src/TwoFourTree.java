@@ -103,7 +103,7 @@ public class TwoFourTree {
       return false;
     }
 
-    // Make new children
+    // Make new children containing split values
 
     TwoFourTreeItem newLeftChild = new TwoFourTreeItem(target.value1);
     TwoFourTreeItem newRightChild = new TwoFourTreeItem(target.value3);
@@ -116,25 +116,109 @@ public class TwoFourTree {
 
     target.values = 1;
 
-    // Relink children of 4-node to newly created nodes
+    // Push child node value to parent according to its type (can't be a 4-node)
+   
+    TwoFourTreeItem parent = target.parent;
+    int middleValue = parent.value1;
 
-    newLeftChild.leftChild = target.leftChild;
-    newLeftChild.rightChild = target.centerLeftChild;
+    if (parent.isTwoNode()){
+        
+        if (parent.isTwoNode()) {
 
-    newRightChild.leftChild = target.centerRightChild;
-    newRightChild.rightChild = target.rightChild;
+          if (middleValue < parent.value1) {
+            parent.value2 = parent.value1;
+            parent.value1 = middleValue;
+          }
 
-    // Finalize making the target into a 2-node, childed with the newly created
-    // nodes
+          else {
+            parent.value2 = middleValue;
+          }
 
-    target.leftChild = newLeftChild;
-    target.rightChild = newRightChild;
+        }
 
-    target.centerLeftChild = null;
-    target.centerRightChild = null;
-    target.centerChild = null;
+        else if (parent.isThreeNode()) {
+
+          if (middleValue < parent.value1) {
+            parent.value3 = parent.value2;
+            parent.value2 = parent.value1;
+            parent.value1 = middleValue;
+          }
+
+          else if (middleValue >= parent.value1 && middleValue <= parent.value2) {
+            parent.value3 = parent.value2;
+            parent.value2 = middleValue;
+          }
+
+          else {
+            parent.value3 = middleValue;
+          }
+    
+      }
+    
+      parent.values++;
+
+    }
+    
+    boolean targetIsLeftChild = target == parent.leftChild;
+    boolean targetIsRightChild = target == parent.rightChild;
+    boolean targetIsCenterChild = target == parent.centerRightChild;
+    boolean targetIsCenterLeftChild = target == parent.centerLeftChild;
+    boolean targetIsCenterRightChild = target == parent.centerRightChild;
+
+    // These are all the cases we need to cover
+    // Also need to ensure we're ok when parent is null
+    // RESUME HERE, draw by hand first!
+
+    if (parent.isTwoNode()){
+      
+      if (targetIsLeftChild){
+
+      }
+
+      else if (targetIsRightChild){
+
+      }
+    
+    }
+
+    else if (parent.isThreeNode()){
+      
+      if (targetIsLeftChild){
+
+      }
+      
+      else if (targetIsCenterChild){
+
+      }
+
+      else if (targetIsRightChild){
+
+      }
+    
+    }
+
+    else if (parent.isFourNode()){
+      
+      if (targetIsLeftChild){
+
+      }
+
+      else if (targetIsCenterLeftChild){
+
+      }
+      
+      else if (targetIsCenterRightChild){
+
+      }
+
+      else if (targetIsRightChild){
+
+      } 
+    
+    }
 
     return true;
+  
   }
 
   public boolean addValue(int value) {
@@ -143,10 +227,6 @@ public class TwoFourTree {
     if (root == null) {
       root = new TwoFourTreeItem(value);
 
-      System.out.printf("No root; creating new: [ %d | %d | %d ]\n", root.value1, root.value2, root.value3);
-
-      System.out.printf("Finished inserting %d\n", value);
-      
       return false;
     }
 
@@ -158,15 +238,12 @@ public class TwoFourTree {
       // If we stumble upon a 4-node, split it!
 
       if (current.isFourNode()) {
-        System.out.printf("At 4-node [ %d | %d | %d ]; splitting...\n", current.value1, current.value2, current.value3);
-
         split(current);
       }
 
       // Case: We hit a leaf node, so we may try inserting at it
 
       if (current.isLeaf()) {
-        System.out.printf("Hit leaf node [ %d | %d | %d ]; ", current.value1, current.value2, current.value3);
 
         if (current.isTwoNode()) {
 
@@ -178,8 +255,6 @@ public class TwoFourTree {
           else {
             current.value2 = value;
           }
-
-          System.out.printf("after insert: [ %d | %d | %d ]\n", current.value1, current.value2, current.value3);
 
         }
 
@@ -200,7 +275,6 @@ public class TwoFourTree {
             current.value3 = value;
           }
 
-          System.out.printf("after insert: [ %d | %d | %d ]\n", current.value1, current.value2, current.value3);
         }
 
         // Adding a value increases node value count!
@@ -212,143 +286,53 @@ public class TwoFourTree {
 
       if (current.isTwoNode()) {
 
-        System.out.printf("Moving from 2-node [ %d | %d | %d ] to ", current.value1, current.value2, current.value3);
-
         if (value < current.value1) {
           current = current.leftChild;
-
-          if (current != null) {
-            System.out.printf("left child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("left child (NULL)\n");
-          }
-
         }
 
         else {
           current = current.rightChild;
-
-          if (current != null) {
-            System.out.printf("right child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("right child (NULL)\n");
-          }
-
         }
 
       }
 
       else if (current.isThreeNode()) {
 
-        System.out.printf("Moving from 3-node [ %d | %d | %d ] to ", current.value1, current.value2, current.value3);
-
         if (value < current.value1) {
           current = current.leftChild;
-
-          if (current != null) {
-            System.out.printf("left child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("left child (NULL)\n");
-          }
-
         }
 
         else if (value >= current.value1 && value <= current.value2) {
           current = current.centerChild;
-
-          if (current != null) {
-            System.out.printf("center child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("center child (NULL)\n");
-          }
-
         }
 
         else {
           current = current.rightChild;
-
-          if (current != null) {
-            System.out.printf("right child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("right child (NULL)\n");
-          }
-
         }
 
       }
 
       else if (current.isFourNode()) {
 
-        System.out.printf("Moving from 4-node [ %d | %d | %d ] to ", current.value1, current.value2, current.value3);
-
         if (value < current.value1) {
           current = current.leftChild;
-
-
-          if (current != null) {
-            System.out.printf("left child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("left child (NULL)\n");
-          }
-        
         }
 
         else if (value >= current.value1 && value < current.value2) {
           current = current.centerLeftChild;
-
-          if (current != null) {
-            System.out.printf("center left child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("center left child (NULL)\n");
-          }
-
         }
 
         else if (value >= current.value2 && value <= current.value3) {
           current = current.centerRightChild;
-
-          if (current != null) {
-            System.out.printf("center right child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("center right child (NULL)\n");
-          }
-
         }
 
         else {
           current = current.rightChild;
-          
-          if (current != null) {
-            System.out.printf("right child [ %d | %d | %d]\n", current.value1, current.value2, current.value3);
-          }
-
-          else {
-            System.out.print("right child (NULL)\n");
-          }
-        
         }
 
       }
-    
-    }
 
-    System.out.printf("Finished inserting %d\n", value);
+    }
 
     return true;
   }
