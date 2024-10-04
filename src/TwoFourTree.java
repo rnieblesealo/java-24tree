@@ -63,37 +63,6 @@ public class TwoFourTree {
       this.value2 = value2;
       this.value3 = value3;
     }
-
-    // Helper
-
-    private void printIndents(int indent) {
-      for (int i = 0; i < indent; i++)
-        System.out.printf("  ");
-    }
-
-    public void printInOrder(int indent) {
-      if (!isLeaf())
-        leftChild.printInOrder(indent + 1);
-      printIndents(indent);
-      System.out.printf("%d\n", value1);
-      if (isThreeNode()) {
-        if (!isLeaf())
-          centerChild.printInOrder(indent + 1);
-        printIndents(indent);
-        System.out.printf("%d\n", value2);
-      } else if (isFourNode()) {
-        if (!isLeaf())
-          centerLeftChild.printInOrder(indent + 1);
-        printIndents(indent);
-        System.out.printf("%d\n", value2);
-        if (!isLeaf())
-          centerRightChild.printInOrder(indent + 1);
-        printIndents(indent);
-        System.out.printf("%d\n", value3);
-      }
-      if (!isLeaf())
-        rightChild.printInOrder(indent + 1);
-    }
   }
 
   TwoFourTreeItem root = null;
@@ -103,122 +72,305 @@ public class TwoFourTree {
       return false;
     }
 
-    // Make new children containing split values
-
-    TwoFourTreeItem newLeftChild = new TwoFourTreeItem(target.value1);
-    TwoFourTreeItem newRightChild = new TwoFourTreeItem(target.value3);
-
-    // Eliminate values from target to make it 2-node
-
-    target.value1 = target.value2;
-    target.value2 = -1;
-    target.value3 = -1;
-
-    target.values = 1;
-
     // Push child node value to parent according to its type (can't be a 4-node)
-   
+
     TwoFourTreeItem parent = target.parent;
-    int middleValue = parent.value1;
 
-    if (parent.isTwoNode()){
-        
-        if (parent.isTwoNode()) {
+    // Necessary information to see what case we perform split by
 
-          if (middleValue < parent.value1) {
-            parent.value2 = parent.value1;
-            parent.value1 = middleValue;
-          }
-
-          else {
-            parent.value2 = middleValue;
-          }
-
-        }
-
-        else if (parent.isThreeNode()) {
-
-          if (middleValue < parent.value1) {
-            parent.value3 = parent.value2;
-            parent.value2 = parent.value1;
-            parent.value1 = middleValue;
-          }
-
-          else if (middleValue >= parent.value1 && middleValue <= parent.value2) {
-            parent.value3 = parent.value2;
-            parent.value2 = middleValue;
-          }
-
-          else {
-            parent.value3 = middleValue;
-          }
-    
-      }
-    
-      parent.values++;
-
-    }
-    
     boolean targetIsLeftChild = target == parent.leftChild;
     boolean targetIsRightChild = target == parent.rightChild;
     boolean targetIsCenterChild = target == parent.centerRightChild;
-    boolean targetIsCenterLeftChild = target == parent.centerLeftChild;
-    boolean targetIsCenterRightChild = target == parent.centerRightChild;
+
+    boolean parentWasTwoNode = false;
+    boolean parentWasThreeNode = false;
+
+    int middleValue = target.value2;
+
+    if (parent.isTwoNode()) {
+
+      if (targetIsLeftChild) {
+        parent.value2 = parent.value1;
+        parent.value1 = middleValue;
+      }
+
+      else if (targetIsRightChild) {
+        parent.value2 = middleValue;
+      }
+
+      parentWasTwoNode = true;
+
+    }
+
+    else if (parent.isThreeNode()) {
+
+      if (targetIsLeftChild) {
+        parent.value3 = parent.value2;
+        parent.value2 = parent.value1;
+        parent.value1 = middleValue;
+      }
+
+      else if (targetIsCenterChild) {
+        parent.value3 = parent.value2;
+        parent.value2 = middleValue;
+      }
+
+      else if (targetIsRightChild) {
+        parent.value3 = middleValue;
+      }
+
+      parentWasThreeNode = true;
+
+    }
+
+    parent.values++;
 
     // These are all the cases we need to cover
     // Also need to ensure we're ok when parent is null
     // RESUME HERE, draw by hand first!
 
-    if (parent.isTwoNode()){
-      
-      if (targetIsLeftChild){
+    if (parentWasTwoNode) {
+
+      if (targetIsLeftChild) {
+        
+        // Keep record of data destroyed during relink
+
+        TwoFourTreeItem centerRightChild = target.centerRightChild;
+        TwoFourTreeItem rightChild = target.rightChild;
+
+        int value3 = target.value3;
+
+        // Turn target into 2-node
+
+        target.value2 = -1;
+        target.value3 = -1;
+
+        target.values -= 2;
+
+        // Move target center left child to target right child now that it is a 2-node
+
+        target.rightChild = target.centerLeftChild;
+
+        // Unbind inner children
+
+        target.centerChild = null;
+        target.centerLeftChild = null;
+        target.centerRightChild = null;
+
+        // Make new 2-node for value3
+
+        TwoFourTreeItem newNode = new TwoFourTreeItem(value3);
+
+        // Child it to center of parent, which is now a 3-node
+
+        parent.centerChild = newNode;
+
+        // Old 4-node's center left and right child are now this node's left and right
+
+        parent.centerChild.leftChild = centerRightChild;
+        parent.centerChild.rightChild = rightChild;
+
+        // Done!
 
       }
 
-      else if (targetIsRightChild){
+      else if (targetIsRightChild) {
+
+        // Keep ref. to left and center left child of target, as well as value1
+
+        TwoFourTreeItem leftChild = target.leftChild;
+        TwoFourTreeItem centerLeftChild = target.centerLeftChild;
+
+        int value1 = target.value1;
+
+        // Make target into 2-node containing only old value3 as value1
+
+        target.value1 = target.value3;
+
+        target.value2 = -1;
+        target.value3 = -1;
+
+        target.values -= 2;
+
+        // Rebind center right child to left child; actual right child stays same
+
+        target.leftChild = target.centerRightChild;
+
+        // Unbind inner children
+
+        target.centerChild = null;
+        target.centerLeftChild = null;
+        target.centerRightChild = null;
+
+        // Make a new node for the kept value1
+
+        TwoFourTreeItem newNode = new TwoFourTreeItem(value1);
+
+        // Make it center child of parent, that's now a 3-node
+
+        parent.centerChild = newNode;
+
+        // Bind kept children as its left and right
+
+        parent.centerChild.leftChild = leftChild;
+        parent.centerChild.rightChild = centerLeftChild;
+
+        // Done!
 
       }
-    
+
     }
 
-    else if (parent.isThreeNode()){
+    else if (parentWasThreeNode) {
+
+      if (targetIsLeftChild) {
+        
+        // Cache required nodes and value
+        
+        TwoFourTreeItem centerRightChild = target.centerRightChild;
+        TwoFourTreeItem rightChild = target.rightChild;
+
+        int value3 = target.value3;
+
+        // Move parent center child to center right
+
+        parent.centerRightChild = parent.centerChild; 
+
+        // Parent (now 4-node) doesn't need a center child definition
+        
+        parent.centerChild = null;
+
+        // Make target a 2-node with value1
+
+        target.value2 = -1;
+        target.value3 = -1;
+        
+        target.values -= 2;
+
+        // Make new 2-node with target's value3
+
+        TwoFourTreeItem newNode = new TwoFourTreeItem(value3);
+
+        // Make it center left of parent
+
+        parent.centerLeftChild = newNode;
       
-      if (targetIsLeftChild){
+        // Bind old children to it
+
+        parent.centerLeftChild.leftChild = centerRightChild;
+        parent.centerLeftChild.rightChild = rightChild;
+        
+        // Done!
 
       }
+
+      else if (targetIsCenterChild) {
+        // Keep track of destroyed items
       
-      else if (targetIsCenterChild){
+        TwoFourTreeItem centerRightChild = target.centerRightChild;
+        TwoFourTreeItem rightChild = target.rightChild;
 
+        int value3 = target.value3;
+        
+        // Make target the parent's center left
+
+        parent.centerLeftChild = target;
+
+        // No need for center ref anymore
+        
+        parent.centerChild = null;
+        
+        // Make target a 2-node w/value1 only
+
+        target.value2 = -1;
+        target.value3 = -1;
+        
+        target.values -= 2;
+
+        // Make target's right child its center left
+
+        target.rightChild = target.centerLeftChild;
+
+        // Remove excess children
+
+        target.centerChild = null;
+        target.centerLeftChild = null;
+        target.centerRightChild = null;
+
+        // Make node for value3    
+        
+        TwoFourTreeItem newNode = new TwoFourTreeItem(value3);
+
+        // It is parent's center right child
+
+        parent.centerRightChild = newNode;
+
+        // Child appropriate nodes to it
+
+        parent.centerRightChild.leftChild = centerRightChild;
+        parent.centerRightChild.rightChild = rightChild;
+      
+        // Done!
+      
       }
 
-      else if (targetIsRightChild){
+      else if (targetIsRightChild) {
 
-      }
+        // Keep necessary refs
+        
+        TwoFourTreeItem leftChild = target.leftChild;
+        TwoFourTreeItem centerLeftChild = target.centerLeftChild;
+
+        int value1 = target.value1;
+
+        // Move parent center to center left
+
+        parent.centerLeftChild = parent.centerChild;
+        
+        // No need for center ref anymore
+
+        parent.centerChild = null;
+
+        // Make target into 2-node containing value3
+        
+        target.value1 = target.value3;
+
+        target.value2 = -1;
+        target.value3 = -1;
+
+        target.values -= 2;
+       
+        // Make target's left child its previous center right child 
+
+        target.leftChild = target.centerRightChild;
+
+        // Unlink excess
+        
+        target.centerChild = null;
+        target.centerLeftChild = null;
+        target.centerRightChild = null;
+
+        // Make new node containing value1
+            
+        TwoFourTreeItem newNode = new TwoFourTreeItem(value1);
+
+        // It's the center right child
+
+        parent.centerRightChild = newNode;
+
+        // Link its corresponding children
+        
+        newNode.leftChild = leftChild;
+        newNode.rightChild = centerLeftChild;
+        
+        // Done!
     
-    }
-
-    else if (parent.isFourNode()){
-      
-      if (targetIsLeftChild){
-
       }
 
-      else if (targetIsCenterLeftChild){
-
-      }
-      
-      else if (targetIsCenterRightChild){
-
-      }
-
-      else if (targetIsRightChild){
-
-      } 
-    
     }
 
     return true;
-  
+
   }
 
   public boolean addValue(int value) {
@@ -347,108 +499,97 @@ public class TwoFourTree {
 
   // Helper
 
-  public void printInOrder() {
-    if (root != null)
-      root.printInOrder(0);
-  }
-
-  private void printTreeItem(TwoFourTreeItem item) {
+  private void printTreeItem(String identifier, TwoFourTreeItem item) {
     if (item == null) {
-      System.out.print("[ NO NODE ]");
+      System.out.printf("%s : [ NO NODE ]\n", identifier);
       return;
     }
 
-    System.out.printf("[ %d | %d | %d ]", item.value1, item.value2, item.value3);
+    System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1, item.value2, item.value3);
+
+    printTreeItem(identifier + " -> l", item.leftChild);
+    printTreeItem(identifier + " -> cl", item.centerLeftChild);
+    printTreeItem(identifier + " -> c", item.centerChild);
+    printTreeItem(identifier + " -> cr", item.centerRightChild);
+    printTreeItem(identifier + " -> r", item.rightChild);
   }
 
-  private void splitTest() {
-    // Create sample node and give it children
+  private void splitTest_2P_4L() {
+    System.out.print("TESTING SPLIT WITH 2-NODE PARENT, 4-NODE LEFT CHILD\n\n");
+    
+    TwoFourTreeItem p = new TwoFourTreeItem(0);
 
-    TwoFourTreeItem test = new TwoFourTreeItem(1, 2);
+    p.leftChild = new TwoFourTreeItem(1, 2, 3);
 
-    test.leftChild = new TwoFourTreeItem(1, 2, 3);
-    test.centerLeftChild = new TwoFourTreeItem(3);
-    test.centerRightChild = new TwoFourTreeItem(7, 8);
-    test.rightChild = new TwoFourTreeItem(5);
+    p.leftChild.parent = p;
 
-    // Show before state
+    p.leftChild.leftChild = new TwoFourTreeItem(4);
+    p.leftChild.centerLeftChild = new TwoFourTreeItem(5);
+    p.leftChild.centerRightChild = new TwoFourTreeItem(6);
+    p.leftChild.rightChild = new TwoFourTreeItem(7);
 
-    System.out.println("--- BEFORE ---\n");
+    p.leftChild.leftChild.parent = p.leftChild;
+    p.leftChild.centerLeftChild.parent = p.leftChild;
+    p.leftChild.centerRightChild.parent = p.leftChild;
+    p.leftChild.rightChild.parent = p.leftChild;
 
-    System.out.print("TARGET: ");
-    printTreeItem(test);
-    System.out.println("\n");
+    p.rightChild = new TwoFourTreeItem(8);
 
-    System.out.print("L: ");
-    printTreeItem(test.leftChild);
-    System.out.print("\n");
-    System.out.print("CL: ");
-    printTreeItem(test.centerLeftChild);
-    System.out.print("\n");
-    System.out.print("CR: ");
-    printTreeItem(test.centerRightChild);
-    System.out.print("\n");
-    System.out.print("R: ");
-    printTreeItem(test.rightChild);
+    p.rightChild.parent = p;
+
+    TwoFourTreeItem target = p.leftChild;
+
+    System.out.print("Before:\n\n");
+    printTreeItem("p", p);
     System.out.print("\n");
 
+    split(target);
+
+    System.out.print("After:\n\n");
+    printTreeItem("p", p);
+    System.out.print("\n");
+  
+  }
+
+  private void splitTest_2P_4R() {
+    System.out.print("TESTING SPLIT WITH 2-NODE PARENT, 4-NODE RIGHT CHILD\n\n");
+    
+    TwoFourTreeItem p = new TwoFourTreeItem(0);
+
+    p.leftChild = new TwoFourTreeItem(1);
+
+    p.leftChild.parent = p;
+
+    p.rightChild = new TwoFourTreeItem(2, 3, 4);
+
+    p.rightChild.parent = p;
+
+    p.rightChild.leftChild = new TwoFourTreeItem(5);
+    p.rightChild.centerLeftChild = new TwoFourTreeItem(6);
+    p.rightChild.centerRightChild = new TwoFourTreeItem(7);
+    p.rightChild.rightChild = new TwoFourTreeItem(8);
+
+    p.rightChild.leftChild.parent = p.rightChild;
+    p.rightChild.centerLeftChild.parent = p.rightChild;
+    p.rightChild.centerRightChild.parent = p.rightChild;
+    p.rightChild.rightChild.parent = p.rightChild;
+
+    TwoFourTreeItem target = p.rightChild;
+
+    System.out.print("Before:\n\n");
+    printTreeItem("p", p);
     System.out.print("\n");
 
-    System.out.print("L of L: ");
-    printTreeItem(test.leftChild.leftChild);
-    System.out.print("\n");
-    System.out.print("R of L: ");
-    printTreeItem(test.leftChild.rightChild);
-    System.out.print("\n");
-    System.out.print("L of R: ");
-    printTreeItem(test.rightChild.leftChild);
-    System.out.print("\n");
-    System.out.print("R of R: ");
-    printTreeItem(test.rightChild.rightChild);
-    System.out.print("\n");
+    split(target);
 
-    // Perform test split
-
-    split(test);
-
-    // Show after state
-
-    System.out.println("\n--- AFTER ---\n");
-
-    System.out.print("TARGET: ");
-    printTreeItem(test);
-    System.out.println("\n");
-
-    System.out.print("L: ");
-    printTreeItem(test.leftChild);
+    System.out.print("After:\n\n");
+    printTreeItem("p", p);
     System.out.print("\n");
-    System.out.print("CL: ");
-    printTreeItem(test.centerLeftChild);
-    System.out.print("\n");
-    System.out.print("CR: ");
-    printTreeItem(test.centerRightChild);
-    System.out.print("\n");
-    System.out.print("R: ");
-    printTreeItem(test.rightChild);
-    System.out.print("\n");
-
-    System.out.print("\n");
-
-    System.out.print("L of L: ");
-    printTreeItem(test.leftChild.leftChild);
-    System.out.print("\n");
-    System.out.print("R of L: ");
-    printTreeItem(test.leftChild.rightChild);
-    System.out.print("\n");
-    System.out.print("L of R: ");
-    printTreeItem(test.rightChild.leftChild);
-    System.out.print("\n");
-    System.out.print("R of R: ");
-    printTreeItem(test.rightChild.rightChild);
-    System.out.print("\n");
+  
   }
 
   public TwoFourTree() {
-
+    splitTest_2P_4L();
+    splitTest_2P_4R();
   }
 }
