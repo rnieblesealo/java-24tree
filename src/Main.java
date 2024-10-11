@@ -1,7 +1,6 @@
 import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.lang.Integer;
 
 public class Main {
@@ -32,22 +31,15 @@ public class Main {
   public static void main(String[] args) {
     TwoFourTree tree = new TwoFourTree();
 
-    System.out.print("-- CREATING TEST ARRAY --\n\n");
+    int testArrSize = 12;
+  
+    int uniqueArray[] = generateUniqueArray(testArrSize, 0, 2 * testArrSize);
 
-    int[] nums = generateUniqueArray(8, 0, 32);
-   
-    for (int i = 0; i < 8; ++i) {
-      System.out.printf("%d ", nums[i]);
+    for (int i = 0; i < testArrSize; ++i){
+      tree.addValue(uniqueArray[i]);
     }
+    
+    tree.printTreeWhole();
 
-    System.out.print("\n\n-- ADDING TO TREE --\n\n");
-   
-    for (int i = 0; i < 8; ++i){
-      tree.addValue(nums[i]);
-    }  
-
-    System.out.print("\n-- PRINTING TREE --\n\n");
-
-    tree.printInOrder();
   }
 }
