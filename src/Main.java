@@ -1,12 +1,13 @@
+import java.lang.Integer;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.HashSet;
-import java.lang.Integer;
 
 public class Main {
   public static int[] generateUniqueArray(int size, int min, int max) {
     if (size > (max - min + 1)) {
-      throw new IllegalArgumentException("Range is too small for the requested array size.");
+      throw new IllegalArgumentException(
+          "Range is too small for the requested array size.");
     }
 
     Set<Integer> uniqueNumbers = new HashSet<>();
@@ -32,14 +33,13 @@ public class Main {
     TwoFourTree tree = new TwoFourTree();
 
     int testArrSize = 12;
-  
+
     int uniqueArray[] = generateUniqueArray(testArrSize, 0, 2 * testArrSize);
 
-    for (int i = 0; i < testArrSize; ++i){
+    for (int i = 0; i < testArrSize; ++i) {
       tree.addValue(uniqueArray[i]);
     }
-    
-    tree.printTreeWhole();
 
+    tree.printTreeWhole();
   }
 }

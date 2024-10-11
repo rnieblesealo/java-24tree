@@ -72,11 +72,69 @@ public class TwoFourTree {
       return false;
     }
 
-    // Push child node value to parent according to its type (can't be a 4-node)
+    // Special case if target is root
+
+    if (target.isRoot()) {
+      // Keep cache of target's remaining values and empty it; it will now be
+      // the left child of the new root
+
+      int value2 = target.value2;
+      int value3 = target.value3;
+
+      target.value2 = -1;
+      target.value3 = -1;
+
+      target.values -= 2;
+
+      // Make ctr. left child the right
+
+      target.rightChild = target.centerLeftChild;
+
+      // Cache right and ctr. right
+
+      TwoFourTreeItem centerRightChild = target.centerRightChild;
+      TwoFourTreeItem rightChild = target.rightChild;
+
+      // Remove excess children on target
+
+      target.centerChild = null;
+      target.centerLeftChild = null;
+      target.centerRightChild = null;
+
+      // Make 2 new nodes for value2 and 3 (value2 will be pushed up)
+
+      TwoFourTreeItem newRoot = new TwoFourTreeItem(value2);
+      TwoFourTreeItem newRight = new TwoFourTreeItem(value3);
+
+      // Do parent links
+
+      newRoot.leftChild = target;
+      newRoot.rightChild = newRight;
+
+      target.parent = newRoot;
+      newRoot.rightChild.parent = newRoot;
+
+      // Put cached children where they belong, doing parent links
+
+      newRight.leftChild = centerRightChild;
+      newRight.rightChild = rightChild;
+
+      newRight.leftChild.parent = newRight;
+      newRight.rightChild.parent = newRight;
+      
+      // Reassign the root
+
+      this.root = newRoot;
+
+      return true;
+
+    }
+
+    // If our parent isn't a root we go to regular inner node cases
+    
+    // Collect necessary information to perform the different cases
 
     TwoFourTreeItem parent = target.parent;
-
-    // Necessary information to see what case we perform split by
 
     boolean targetIsLeftChild = target == parent.leftChild;
     boolean targetIsRightChild = target == parent.rightChild;
@@ -87,15 +145,9 @@ public class TwoFourTree {
 
     int middleValue = target.value2;
 
-    // Special case if target is root
-
-    if (target.isRoot()) {
-      // Handle here...
-    }
-
     // Phase 1: Push middle value up
 
-    else if (parent.isTwoNode()) {
+    if (parent.isTwoNode()) {
 
       if (targetIsLeftChild) {
         parent.value2 = parent.value1;
@@ -532,9 +584,13 @@ public class TwoFourTree {
     return true;
   }
 
-  public boolean hasValue(int value) { return false; }
+  public boolean hasValue(int value) {
+    return false;
+  }
 
-  public boolean deleteValue(int value) { return false; }
+  public boolean deleteValue(int value) {
+    return false;
+  }
 
   // Helper
 
@@ -545,7 +601,7 @@ public class TwoFourTree {
     }
 
     System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
-                      item.value2, item.value3);
+        item.value2, item.value3);
 
     printTreeItem(identifier + " -> l", item.leftChild);
     printTreeItem(identifier + " -> cl", item.centerLeftChild);
@@ -554,7 +610,9 @@ public class TwoFourTree {
     printTreeItem(identifier + " -> r", item.rightChild);
   }
 
-  public void printTreeWhole() { printTreeItem("root", this.root); }
+  public void printTreeWhole() {
+    printTreeItem("root", this.root);
+  }
 
   private void splitTestCase1() {
     System.out.print("TESTING SPLIT WITH 2-NODE PARENT, 4-NODE LEFT CHILD\n\n");
@@ -746,5 +804,37 @@ public class TwoFourTree {
     System.out.print("\n");
   }
 
-  public TwoFourTree() {}
+  private void splitTestCase6() {
+    System.out.print("TESTING SPLIT WITH 4-NODE ROOT\n\n");
+
+    TwoFourTreeItem p = new TwoFourTreeItem(1, 2, 3);
+
+    p.leftChild = new TwoFourTreeItem(4);
+    p.leftChild.parent = p;
+
+    p.centerLeftChild = new TwoFourTreeItem(5);
+    p.centerLeftChild.parent = p;
+
+    p.centerRightChild = new TwoFourTreeItem(6);
+    p.centerRightChild.parent = p;
+
+    p.rightChild = new TwoFourTreeItem(7);
+    p.rightChild.parent = p;
+
+    TwoFourTreeItem target = p;
+
+    System.out.print("Before:\n\n");
+    printTreeItem("p", p);
+    System.out.print("\n");
+
+    split(target);
+
+    System.out.print("After:\n\n");
+    printTreeItem("p", root);
+    System.out.print("\n");
+  }
+
+  public TwoFourTree() {
+
+  }
 }
