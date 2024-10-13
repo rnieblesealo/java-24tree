@@ -119,19 +119,25 @@ public class TwoFourTree {
       newRight.leftChild = centerRightChild;
       newRight.rightChild = rightChild;
 
-      newRight.leftChild.parent = newRight;
-      newRight.rightChild.parent = newRight;
-      
+      // FIX: the newly set children may be nulls; account for this
+
+      if (newRight.leftChild != null) {
+        newRight.leftChild.parent = newRight;
+      }
+
+      if (newRight.rightChild != null) {
+        newRight.rightChild.parent = newRight;
+      }
+
       // Reassign the root
 
       this.root = newRoot;
 
       return true;
-
     }
 
     // If our parent isn't a root we go to regular inner node cases
-    
+
     // Collect necessary information to perform the different cases
 
     TwoFourTreeItem parent = target.parent;
@@ -223,21 +229,26 @@ public class TwoFourTree {
 
         parent.centerChild = newNode;
 
+        // FIX: Do parent links
+        // FIX: Account for null accesses by using if-guards
+
         // Old 4-node's center left and right child are now this node's left and
         // right
+
+        newNode.parent = parent;
 
         parent.centerChild.leftChild = centerRightChild;
         parent.centerChild.rightChild = rightChild;
 
-        // FIX: Do parent links
+        if (parent.centerChild.leftChild != null) {
+          parent.centerChild.leftChild.parent = parent.centerChild;
+        }
 
-        newNode.parent = parent;
-
-        parent.centerChild.leftChild.parent = parent.centerChild;
-        parent.centerChild.rightChild.parent = parent.centerChild;
+        if (parent.centerChild.rightChild != null) {
+          parent.centerChild.rightChild.parent = parent.centerChild;
+        }
 
         // Done!
-
       }
 
       else if (targetIsRightChild) {
@@ -279,19 +290,24 @@ public class TwoFourTree {
 
         // Bind kept children as its left and right
 
-        parent.centerChild.leftChild = leftChild;
-        parent.centerChild.rightChild = centerLeftChild;
-
         // FIX: Do parent links
+        // FIX: Account for nullity
 
         newNode.parent = parent;
 
-        parent.centerChild.leftChild.parent = parent.centerChild;
-        parent.centerChild.rightChild.parent = parent.centerChild;
+        parent.centerChild.leftChild = leftChild;
+        parent.centerChild.rightChild = centerLeftChild;
+
+        if (parent.centerChild.leftChild != null) {
+          parent.centerChild.leftChild.parent = parent.centerChild;
+        }
+
+        if (parent.centerChild.rightChild != null) {
+          parent.centerChild.rightChild.parent = parent.centerChild;
+        }
 
         // Done!
       }
-
     }
 
     else if (parentWasThreeNode) {
@@ -341,11 +357,17 @@ public class TwoFourTree {
         parent.centerLeftChild.rightChild = rightChild;
 
         // FIX: Do parent links
+        // FIX: Account for nullity
 
         newNode.parent = parent;
 
-        parent.centerLeftChild.leftChild.parent = parent.centerLeftChild;
-        parent.centerLeftChild.rightChild.parent = parent.centerLeftChild;
+        if (parent.centerLeftChild.leftChild != null) {
+          parent.centerLeftChild.leftChild.parent = parent.centerLeftChild;
+        }
+
+        if (parent.centerLeftChild.rightChild != null) {
+          parent.centerLeftChild.rightChild.parent = parent.centerLeftChild;
+        }
 
         // Done!
 
@@ -398,11 +420,17 @@ public class TwoFourTree {
         parent.centerRightChild.rightChild = rightChild;
 
         // FIX: Do parent links
+        // FIX: Account for nullity
 
         newNode.parent = parent;
 
-        parent.centerRightChild.leftChild.parent = parent.centerRightChild;
-        parent.centerRightChild.rightChild.parent = parent.centerRightChild;
+        if (parent.centerRightChild.leftChild != null) {
+          parent.centerRightChild.leftChild.parent = parent.centerRightChild;
+        }
+
+        if (parent.centerRightChild.rightChild != null) {
+          parent.centerRightChild.rightChild.parent = parent.centerRightChild;
+        }
 
         // Done!
 
@@ -458,11 +486,17 @@ public class TwoFourTree {
         parent.centerRightChild.rightChild = centerLeftChild;
 
         // FIX: Do parent links
+        // FIX: Account for nullity
 
         newNode.parent = parent;
 
-        parent.centerRightChild.leftChild.parent = parent.centerRightChild;
-        parent.centerRightChild.rightChild.parent = parent.centerRightChild;
+        if (parent.centerRightChild.leftChild != null) {
+          parent.centerRightChild.leftChild.parent = parent.centerRightChild;
+        }
+
+        if (parent.centerRightChild.rightChild != null) {
+          parent.centerRightChild.rightChild.parent = parent.centerRightChild;
+        }
 
         // Done!
       }
@@ -485,13 +519,39 @@ public class TwoFourTree {
     TwoFourTreeItem current = root;
 
     while (current != null) {
-      // If we stumble upon a 4-node, split it!
+      // WARNING: The logic here is not clear
+      // Do we split from root-down, or from leaf-up?
+      // In the first case, we just split everything we run into
+      // In the second case, we'd need an initial root split to trigger upwards splits
+      // This logic follows case 1
+
+      // If we stumble upon a 4-node, perform split and then move to correct
+      // node from parent
 
       if (current.isFourNode()) {
         split(current);
+
+        current = current.parent;
+
+        if (value < current.value1) {
+          current = current.leftChild;
+        }
+
+        else if (value >= current.value1 && value < current.value2) {
+          current = current.centerLeftChild;
+        }
+
+        else if (value >= current.value2 && value <= current.value3) {
+          current = current.centerRightChild;
+        }
+
+        else {
+          current = current.rightChild;
+        }
       }
 
-      // Case: We hit a leaf node, so we may try inserting at it
+      // If we hit a leaf node, we try performing insertion here
+      // Can only be 2-node or 3-node
 
       if (current.isLeaf()) {
 
@@ -529,12 +589,15 @@ public class TwoFourTree {
         // Adding a value increases node value count!
 
         current.values++;
+
+        // Stop walking
+
+        break;
       }
 
       // Move further down the tree
 
       if (current.isTwoNode()) {
-
         if (value < current.value1) {
           current = current.leftChild;
         }
@@ -542,11 +605,9 @@ public class TwoFourTree {
         else {
           current = current.rightChild;
         }
-
       }
 
       else if (current.isThreeNode()) {
-
         if (value < current.value1) {
           current = current.leftChild;
         }
@@ -558,39 +619,15 @@ public class TwoFourTree {
         else {
           current = current.rightChild;
         }
-
-      }
-
-      else if (current.isFourNode()) {
-
-        if (value < current.value1) {
-          current = current.leftChild;
-        }
-
-        else if (value >= current.value1 && value < current.value2) {
-          current = current.centerLeftChild;
-        }
-
-        else if (value >= current.value2 && value <= current.value3) {
-          current = current.centerRightChild;
-        }
-
-        else {
-          current = current.rightChild;
-        }
       }
     }
 
-    return true;
-  }
-
-  public boolean hasValue(int value) {
     return false;
   }
 
-  public boolean deleteValue(int value) {
-    return false;
-  }
+  public boolean hasValue(int value) { return false; }
+
+  public boolean deleteValue(int value) { return false; }
 
   // Helper
 
@@ -601,7 +638,7 @@ public class TwoFourTree {
     }
 
     System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
-        item.value2, item.value3);
+                      item.value2, item.value3);
 
     printTreeItem(identifier + " -> l", item.leftChild);
     printTreeItem(identifier + " -> cl", item.centerLeftChild);
@@ -610,9 +647,7 @@ public class TwoFourTree {
     printTreeItem(identifier + " -> r", item.rightChild);
   }
 
-  public void printTreeWhole() {
-    printTreeItem("root", this.root);
-  }
+  public void printTreeWhole() { printTreeItem("root", this.root); }
 
   private void splitTestCase1() {
     System.out.print("TESTING SPLIT WITH 2-NODE PARENT, 4-NODE LEFT CHILD\n\n");
@@ -834,7 +869,5 @@ public class TwoFourTree {
     System.out.print("\n");
   }
 
-  public TwoFourTree() {
-
-  }
+  public TwoFourTree() {}
 }

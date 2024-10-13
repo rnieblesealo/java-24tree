@@ -32,11 +32,12 @@ public class Main {
   public static void main(String[] args) {
     TwoFourTree tree = new TwoFourTree();
 
-    int testArrSize = 12;
+    // int testArrSize = 12;
+    // int[] uniqueArray = generateUniqueArray(testArrSize, 0, 2 * testArrSize);
 
-    int uniqueArray[] = generateUniqueArray(testArrSize, 0, 2 * testArrSize);
+    int uniqueArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-    for (int i = 0; i < testArrSize; ++i) {
+    for (int i = 0; i < uniqueArray.length; ++i) {
       tree.addValue(uniqueArray[i]);
     }
 
