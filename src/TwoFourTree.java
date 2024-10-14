@@ -71,7 +71,15 @@ public class TwoFourTree {
     if (!target.isFourNode()) {
       return false;
     }
-
+    
+    // If the parent is also a 4-node, we're gonna have some trouble promoting
+    // Recursively call this on the parent until it's not a 4-node or it's the root
+    // This should take care of backprop splitting on addValue too
+    
+    if (!target.isRoot() && target.parent.isFourNode()){
+      split(target.parent);  
+    }
+    
     // Special case if target is root
 
     if (target.isRoot()) {
@@ -86,14 +94,14 @@ public class TwoFourTree {
 
       target.values -= 2;
 
-      // Make ctr. left child the right
-
-      target.rightChild = target.centerLeftChild;
-
       // Cache right and ctr. right
 
       TwoFourTreeItem centerRightChild = target.centerRightChild;
       TwoFourTreeItem rightChild = target.rightChild;
+
+      // Make ctr. left child the right
+
+      target.rightChild = target.centerLeftChild;
 
       // Remove excess children on target
 
@@ -501,7 +509,7 @@ public class TwoFourTree {
         // Done!
       }
     }
-
+   
     return true;
   }
 
@@ -649,225 +657,19 @@ public class TwoFourTree {
 
   public void printTreeWhole() { printTreeItem("root", this.root); }
 
-  private void splitTestCase1() {
-    System.out.print("TESTING SPLIT WITH 2-NODE PARENT, 4-NODE LEFT CHILD\n\n");
+  private void recursiveSplitTest(){
+    root = new TwoFourTreeItem(1, 2, 3);
 
-    TwoFourTreeItem p = new TwoFourTreeItem(0);
+    root.rightChild = new TwoFourTreeItem(4, 5, 6);
 
-    p.leftChild = new TwoFourTreeItem(1, 2, 3);
+    root.rightChild.parent = root;
 
-    p.leftChild.parent = p;
+    split(root.rightChild);
 
-    p.leftChild.leftChild = new TwoFourTreeItem(4);
-    p.leftChild.centerLeftChild = new TwoFourTreeItem(5);
-    p.leftChild.centerRightChild = new TwoFourTreeItem(6);
-    p.leftChild.rightChild = new TwoFourTreeItem(7);
-
-    // important! create parent connection
-
-    p.leftChild.leftChild.parent = p.leftChild;
-    p.leftChild.centerLeftChild.parent = p.leftChild;
-    p.leftChild.centerRightChild.parent = p.leftChild;
-    p.leftChild.rightChild.parent = p.leftChild;
-
-    p.rightChild = new TwoFourTreeItem(8);
-
-    // bind parent
-
-    p.rightChild.parent = p;
-
-    TwoFourTreeItem target = p.leftChild;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
+    printTreeWhole();
   }
 
-  private void splitTestCase2() {
-    System.out.print(
-        "TESTING SPLIT WITH 2-NODE PARENT, 4-NODE RIGHT CHILD\n\n");
-
-    TwoFourTreeItem p = new TwoFourTreeItem(0);
-
-    p.leftChild = new TwoFourTreeItem(8);
-
-    p.leftChild.parent = p;
-
-    p.rightChild = new TwoFourTreeItem(1, 2, 3);
-
-    p.rightChild.parent = p;
-
-    p.rightChild.leftChild = new TwoFourTreeItem(4);
-    p.rightChild.centerLeftChild = new TwoFourTreeItem(5);
-    p.rightChild.centerRightChild = new TwoFourTreeItem(6);
-    p.rightChild.rightChild = new TwoFourTreeItem(7);
-
-    p.rightChild.leftChild.parent = p.rightChild;
-    p.rightChild.centerLeftChild.parent = p.rightChild;
-    p.rightChild.centerRightChild.parent = p.rightChild;
-    p.rightChild.rightChild.parent = p.rightChild;
-
-    TwoFourTreeItem target = p.rightChild;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
+  public TwoFourTree() {
+    recursiveSplitTest();
   }
-
-  private void splitTestCase3() {
-    System.out.print("TESTING SPLIT WITH 3-NODE PARENT, 4-NODE LEFT CHILD\n\n");
-
-    TwoFourTreeItem p = new TwoFourTreeItem(0, 9);
-
-    p.leftChild = new TwoFourTreeItem(1, 2, 3);
-    p.leftChild.parent = p;
-
-    p.centerChild = new TwoFourTreeItem(8);
-    p.centerChild.parent = p;
-
-    p.rightChild = new TwoFourTreeItem(9);
-    p.rightChild.parent = p;
-
-    p.leftChild.leftChild = new TwoFourTreeItem(4);
-    p.leftChild.centerLeftChild = new TwoFourTreeItem(5);
-    p.leftChild.centerRightChild = new TwoFourTreeItem(6);
-    p.leftChild.rightChild = new TwoFourTreeItem(7);
-
-    p.leftChild.leftChild.parent = p.rightChild;
-    p.leftChild.centerLeftChild.parent = p.rightChild;
-    p.leftChild.centerRightChild.parent = p.rightChild;
-    p.leftChild.rightChild.parent = p.rightChild;
-
-    TwoFourTreeItem target = p.leftChild;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-  }
-
-  private void splitTestCase4() {
-    System.out.print(
-        "TESTING SPLIT WITH 3-NODE PARENT, 4-NODE CENTER CHILD\n\n");
-
-    TwoFourTreeItem p = new TwoFourTreeItem(0, 9);
-
-    p.leftChild = new TwoFourTreeItem(8);
-    p.leftChild.parent = p;
-
-    p.centerChild = new TwoFourTreeItem(1, 2, 3);
-    p.centerChild.parent = p;
-
-    p.rightChild = new TwoFourTreeItem(10);
-    p.rightChild.parent = p;
-
-    p.centerChild.leftChild = new TwoFourTreeItem(4);
-    p.centerChild.centerLeftChild = new TwoFourTreeItem(5);
-    p.centerChild.centerRightChild = new TwoFourTreeItem(6);
-    p.centerChild.rightChild = new TwoFourTreeItem(7);
-
-    p.centerChild.leftChild.parent = p.rightChild;
-    p.centerChild.centerLeftChild.parent = p.rightChild;
-    p.centerChild.centerRightChild.parent = p.rightChild;
-    p.centerChild.rightChild.parent = p.rightChild;
-
-    TwoFourTreeItem target = p.centerChild;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-  }
-
-  private void splitTestCase5() {
-    System.out.print(
-        "TESTING SPLIT WITH 3-NODE PARENT, 4-NODE RIGHT CHILD\n\n");
-
-    TwoFourTreeItem p = new TwoFourTreeItem(0, 9);
-
-    p.leftChild = new TwoFourTreeItem(8);
-    p.leftChild.parent = p;
-
-    p.centerChild = new TwoFourTreeItem(10);
-    p.centerChild.parent = p;
-
-    p.rightChild = new TwoFourTreeItem(1, 2, 3);
-    p.rightChild.parent = p;
-
-    p.rightChild.leftChild = new TwoFourTreeItem(4);
-    p.rightChild.centerLeftChild = new TwoFourTreeItem(5);
-    p.rightChild.centerRightChild = new TwoFourTreeItem(6);
-    p.rightChild.rightChild = new TwoFourTreeItem(7);
-
-    p.rightChild.leftChild.parent = p.rightChild;
-    p.rightChild.centerLeftChild.parent = p.rightChild;
-    p.rightChild.centerRightChild.parent = p.rightChild;
-    p.rightChild.rightChild.parent = p.rightChild;
-
-    TwoFourTreeItem target = p.rightChild;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-  }
-
-  private void splitTestCase6() {
-    System.out.print("TESTING SPLIT WITH 4-NODE ROOT\n\n");
-
-    TwoFourTreeItem p = new TwoFourTreeItem(1, 2, 3);
-
-    p.leftChild = new TwoFourTreeItem(4);
-    p.leftChild.parent = p;
-
-    p.centerLeftChild = new TwoFourTreeItem(5);
-    p.centerLeftChild.parent = p;
-
-    p.centerRightChild = new TwoFourTreeItem(6);
-    p.centerRightChild.parent = p;
-
-    p.rightChild = new TwoFourTreeItem(7);
-    p.rightChild.parent = p;
-
-    TwoFourTreeItem target = p;
-
-    System.out.print("Before:\n\n");
-    printTreeItem("p", p);
-    System.out.print("\n");
-
-    split(target);
-
-    System.out.print("After:\n\n");
-    printTreeItem("p", root);
-    System.out.print("\n");
-  }
-
-  public TwoFourTree() {}
 }
