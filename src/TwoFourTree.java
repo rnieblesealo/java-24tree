@@ -67,19 +67,24 @@ public class TwoFourTree {
 
   TwoFourTreeItem root = null;
 
-  public boolean split(TwoFourTreeItem target) {
+  public TwoFourTreeItem split(TwoFourTreeItem target) {
+    // Split the target node and then return its parent
+    // Returns itself if the target was the root or needs no split
+
     if (!target.isFourNode()) {
-      return false;
+      return target;
     }
-    
-    // If the parent is also a 4-node, we're gonna have some trouble promoting
-    // Recursively call this on the parent until it's not a 4-node or it's the root
-    // This should take care of backprop splitting on addValue too
-    
-    if (!target.isRoot() && target.parent.isFourNode()){
-      split(target.parent);  
+
+    // If the parent of target is also a 4-node, we're gonna have some trouble
+    // promoting
+
+    // Recursively call this on the parent until it's not a 4-node or it's the
+    // root This should take care of backprop splitting on addValue too
+
+    if (!target.isRoot() && target.parent.isFourNode()) {
+      split(target.parent);
     }
-    
+
     // Special case if target is root
 
     if (target.isRoot()) {
@@ -141,7 +146,7 @@ public class TwoFourTree {
 
       this.root = newRoot;
 
-      return true;
+      return newRoot;
     }
 
     // If our parent isn't a root we go to regular inner node cases
@@ -509,8 +514,8 @@ public class TwoFourTree {
         // Done!
       }
     }
-   
-    return true;
+
+    return target.parent;
   }
 
   public boolean addValue(int value) {
@@ -527,105 +532,124 @@ public class TwoFourTree {
     TwoFourTreeItem current = root;
 
     while (current != null) {
-      // WARNING: The logic here is not clear
-      // Do we split from root-down, or from leaf-up?
-      // In the first case, we just split everything we run into
-      // In the second case, we'd need an initial root split to trigger upwards splits
-      // This logic follows case 1
+      // Stop when a leaf is hit
+      if (current.isLeaf()) {
+        
+        /*
+        System.out.println("Stopping...");
+        printSingleNode("CURR AT STOP", current);
+        */
 
-      // If we stumble upon a 4-node, perform split and then move to correct
-      // node from parent
+        // Split leaf 4-node if necessary, moving current to its parent
+        if (current.isFourNode()) {
 
-      if (current.isFourNode()) {
-        split(current);
+          // System.out.println("Doing split...");
 
-        current = current.parent;
+          current = split(current);
 
-        if (value < current.value1) {
-          current = current.leftChild;
+          // printSingleNode("CURR AFTER SPLIT", current);
         }
 
-        else if (value >= current.value1 && value < current.value2) {
-          current = current.centerLeftChild;
-        }
-
-        else if (value >= current.value2 && value <= current.value3) {
-          current = current.centerRightChild;
-        }
-
+        // If not, perform insertion
         else {
-          current = current.rightChild;
+          if (current.isTwoNode()) {
+
+            if (value < current.value1) {
+              current.value2 = current.value1;
+              current.value1 = value;
+            }
+
+            else {
+              current.value2 = value;
+            }
+
+          }
+
+          else if (current.isThreeNode()) {
+
+            if (value < current.value1) {
+              current.value3 = current.value2;
+              current.value2 = current.value1;
+              current.value1 = value;
+            }
+
+            else if (value >= current.value1 && value <= current.value2) {
+              current.value3 = current.value2;
+              current.value2 = value;
+            }
+
+            else {
+              current.value3 = value;
+            }
+          }
+
+          // Adding a value increases node value count!
+          current.values++;
+
+          /*
+          System.out.println("Insertion done!");
+          printSingleNode("CURR AFTER INSERTION", current);
+          */
+
+          // Insertion is done, so stop!
+          break;
         }
       }
 
-      // If we hit a leaf node, we try performing insertion here
-      // Can only be 2-node or 3-node
+      // If no leaf hit, traverse downward
+      else {
 
-      if (current.isLeaf()) {
+        // System.out.println("Walking...");
 
         if (current.isTwoNode()) {
 
+          // System.out.println("Moving from 2node...");
+
           if (value < current.value1) {
-            current.value2 = current.value1;
-            current.value1 = value;
+            current = current.leftChild;
           }
 
           else {
-            current.value2 = value;
+            current = current.rightChild;
           }
-
         }
 
         else if (current.isThreeNode()) {
 
+          // System.out.println("Moving from 3node...");
+
           if (value < current.value1) {
-            current.value3 = current.value2;
-            current.value2 = current.value1;
-            current.value1 = value;
+            current = current.leftChild;
           }
 
           else if (value >= current.value1 && value <= current.value2) {
-            current.value3 = current.value2;
-            current.value2 = value;
+            current = current.centerChild;
           }
 
           else {
-            current.value3 = value;
+            current = current.rightChild;
           }
         }
 
-        // Adding a value increases node value count!
+        else if (current.isFourNode()) {
 
-        current.values++;
+          // System.out.println("Moving from 4node...");
+          
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
 
-        // Stop walking
+          else if (value >= current.value1 && value < current.value2) {
+            current = current.centerLeftChild;
+          }
 
-        break;
-      }
+          else if (value >= current.value2 && value <= current.value3) {
+            current = current.centerLeftChild;
+          }
 
-      // Move further down the tree
-
-      if (current.isTwoNode()) {
-        if (value < current.value1) {
-          current = current.leftChild;
-        }
-
-        else {
-          current = current.rightChild;
-        }
-      }
-
-      else if (current.isThreeNode()) {
-        if (value < current.value1) {
-          current = current.leftChild;
-        }
-
-        else if (value >= current.value1 && value <= current.value2) {
-          current = current.centerChild;
-        }
-
-        else {
-          current = current.rightChild;
+          else {
+            current = current.rightChild;
+          }
         }
       }
     }
@@ -639,37 +663,41 @@ public class TwoFourTree {
 
   // Helper
 
-  private void printTreeItem(String identifier, TwoFourTreeItem item) {
+  private void printSingleNode(String identifier, TwoFourTreeItem item) {
+    switch (item.values) {
+    case 1:
+      System.out.printf("%s : [ %d ]\n", identifier, item.value1);
+      break;
+    case 2:
+      System.out.printf("%s : [ %d | %d ]\n", identifier, item.value1,
+                        item.value2);
+      break;
+    case 3:
+      System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
+                        item.value2, item.value3);
+      break;
+    default:
+      System.out.printf("%s : INVALID VALUE COUNT\n");
+      break;
+    }
+  }
+
+  private void printTree(String identifier, TwoFourTreeItem item) {
     if (item == null) {
-      System.out.printf("%s : [ NO NODE ]\n", identifier);
+      System.out.printf("%s : \n", identifier);
       return;
     }
 
-    System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
-                      item.value2, item.value3);
+    printSingleNode(identifier, item);
 
-    printTreeItem(identifier + " -> l", item.leftChild);
-    printTreeItem(identifier + " -> cl", item.centerLeftChild);
-    printTreeItem(identifier + " -> c", item.centerChild);
-    printTreeItem(identifier + " -> cr", item.centerRightChild);
-    printTreeItem(identifier + " -> r", item.rightChild);
+    printTree(identifier + " -> l", item.leftChild);
+    printTree(identifier + " -> cl", item.centerLeftChild);
+    printTree(identifier + " -> c", item.centerChild);
+    printTree(identifier + " -> cr", item.centerRightChild);
+    printTree(identifier + " -> r", item.rightChild);
   }
 
-  public void printTreeWhole() { printTreeItem("root", this.root); }
+  public void printFromRoot() { printTree("root", this.root); }
 
-  private void recursiveSplitTest(){
-    root = new TwoFourTreeItem(1, 2, 3);
-
-    root.rightChild = new TwoFourTreeItem(4, 5, 6);
-
-    root.rightChild.parent = root;
-
-    split(root.rightChild);
-
-    printTreeWhole();
-  }
-
-  public TwoFourTree() {
-    recursiveSplitTest();
-  }
+  public TwoFourTree() {}
 }
