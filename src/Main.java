@@ -32,17 +32,31 @@ public class Main {
   public static void main(String[] args) {
     TwoFourTree tree = new TwoFourTree();
 
-    /* // Unique, random n-length array
-    int testArrSize = 12;
-    int[] uniqueArray = generateUniqueArray(testArrSize, 0, 2 * testArrSize);
-    */
-    
-    int uniqueArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    // Make a random tree
 
-    for (int i = 0; i < uniqueArray.length; ++i) {
-      tree.addValue(uniqueArray[i]);
+    int amtValuesToAdd = 10000000;
+    int[] valuesToAdd = generateUniqueArray(amtValuesToAdd, 0, 2 * amtValuesToAdd);
+
+    for (int i = 0; i < valuesToAdd.length; ++i) {
+      tree.addValue(valuesToAdd[i]);
     }
 
-    tree.printFromRoot();
+    tree.printInOrder();
+
+    // Perform some random checks
+
+    Random random = new Random();
+
+    int testsAmt = 24;
+    int testsMaxBound = valuesToAdd.length + 32;
+
+    for (int i = 0; i < testsAmt; ++i) {
+      int randomCheck = random.nextInt(0, testsMaxBound);
+      System.out.println("Is " + randomCheck +
+                         " in? : " + tree.hasValue(randomCheck));
+    }
   }
+
+  // Shit works but is slow AS FUCK
+  // nvm shit is fast as FUCK the slow part is printing :) 
 }

@@ -33,6 +33,7 @@ public class TwoFourTree {
       return this.parent == null;
     }
 
+    // WARNING: This needs to be a variable, NOT a function!
     public boolean isLeaf() {
       return leftChild == null && rightChild == null && centerChild == null &&
           centerLeftChild == null && centerRightChild == null;
@@ -62,6 +63,37 @@ public class TwoFourTree {
       this.value1 = value1;
       this.value2 = value2;
       this.value3 = value3;
+    }
+
+    // Gerber Helper
+
+    private void printIndents(int indent) {
+      for (int i = 0; i < indent; i++)
+        System.out.printf("  ");
+    }
+
+    public void printInOrder(int indent) {
+      if (!isLeaf())
+        leftChild.printInOrder(indent + 1);
+      printIndents(indent);
+      System.out.printf("%d\n", value1);
+      if (isThreeNode()) {
+        if (!isLeaf())
+          centerChild.printInOrder(indent + 1);
+        printIndents(indent);
+        System.out.printf("%d\n", value2);
+      } else if (isFourNode()) {
+        if (!isLeaf())
+          centerLeftChild.printInOrder(indent + 1);
+        printIndents(indent);
+        System.out.printf("%d\n", value2);
+        if (!isLeaf())
+          centerRightChild.printInOrder(indent + 1);
+        printIndents(indent);
+        System.out.printf("%d\n", value3);
+      }
+      if (!isLeaf())
+        rightChild.printInOrder(indent + 1);
     }
   }
 
@@ -534,11 +566,11 @@ public class TwoFourTree {
     while (current != null) {
       // Stop when a leaf is hit
       if (current.isLeaf()) {
-        
+
         /*
-        System.out.println("Stopping...");
-        printSingleNode("CURR AT STOP", current);
-        */
+         * System.out.println("Stopping...");
+         * printSingleNode("CURR AT STOP", current);
+         */
 
         // Split leaf 4-node if necessary, moving current to its parent
         if (current.isFourNode()) {
@@ -587,9 +619,9 @@ public class TwoFourTree {
           current.values++;
 
           /*
-          System.out.println("Insertion done!");
-          printSingleNode("CURR AFTER INSERTION", current);
-          */
+           * System.out.println("Insertion done!");
+           * printSingleNode("CURR AFTER INSERTION", current);
+           */
 
           // Insertion is done, so stop!
           break;
@@ -634,7 +666,7 @@ public class TwoFourTree {
         else if (current.isFourNode()) {
 
           // System.out.println("Moving from 4node...");
-          
+
           if (value < current.value1) {
             current = current.leftChild;
           }
@@ -657,7 +689,88 @@ public class TwoFourTree {
     return false;
   }
 
-  public boolean hasValue(int value) { return false; }
+  public boolean hasValue(int value) {
+    // Check value against the ones written to node
+    // If not present, walk down following ordering until either we find it or
+    // we hit a leaf
+
+    TwoFourTreeItem current = root;
+
+    while (current != null) {
+
+      // Walk down
+
+      if (current.isTwoNode()) {
+
+        // Compare value against ones in node
+        // We could just put this outside these ifs but I think it's a little
+        // more readable this way!
+
+        if (value == current.value1) {
+          return true;
+        }
+
+        // If not there, move on
+
+        else {
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else {
+            current = current.rightChild;
+          }
+        }
+      }
+
+      else if (current.isThreeNode()) {
+        if (value == current.value1 || value == current.value2) {
+          return true;
+        }
+
+        else {
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else if (value >= current.value1 && value <= current.value2) {
+            current = current.centerChild;
+          }
+
+          else {
+            current = current.rightChild;
+          }
+        }
+      }
+
+      else if (current.isFourNode()) {
+        if (value == current.value1 || value == current.value2 ||
+            value == current.value3) {
+          return true;
+        }
+
+        if (value < current.value1) {
+          current = current.leftChild;
+        }
+
+        else if (value >= current.value1 && value < current.value2) {
+          current = current.centerLeftChild;
+        }
+
+        else if (value >= current.value2 && value <= current.value3) {
+          current = current.centerLeftChild;
+        }
+
+        else {
+          current = current.rightChild;
+        }
+      }
+    }
+
+    // If we go past a leaf there ain't no way the value exists
+
+    return false;
+  }
 
   public boolean deleteValue(int value) { return false; }
 
@@ -698,6 +811,13 @@ public class TwoFourTree {
   }
 
   public void printFromRoot() { printTree("root", this.root); }
+
+  // Gerber Helper
+
+  public void printInOrder() {
+    if (root != null)
+      root.printInOrder(0);
+  }
 
   public TwoFourTree() {}
 }
