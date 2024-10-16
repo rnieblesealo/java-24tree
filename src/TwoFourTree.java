@@ -6,6 +6,8 @@ public class TwoFourTree {
     int value2 = -1;
     int value3 = -1;
 
+    public boolean isLeaf = true;
+
     TwoFourTreeItem parent = null;
     TwoFourTreeItem leftChild = null;
     TwoFourTreeItem rightChild = null;
@@ -31,12 +33,6 @@ public class TwoFourTree {
     public boolean isRoot() {
       // A root has no parent
       return this.parent == null;
-    }
-
-    // WARNING: This needs to be a variable, NOT a function!
-    public boolean isLeaf() {
-      return leftChild == null && rightChild == null && centerChild == null &&
-          centerLeftChild == null && centerRightChild == null;
     }
 
     public TwoFourTreeItem(int value1) {
@@ -73,26 +69,26 @@ public class TwoFourTree {
     }
 
     public void printInOrder(int indent) {
-      if (!isLeaf())
+      if (!isLeaf)
         leftChild.printInOrder(indent + 1);
       printIndents(indent);
       System.out.printf("%d\n", value1);
       if (isThreeNode()) {
-        if (!isLeaf())
+        if (!isLeaf)
           centerChild.printInOrder(indent + 1);
         printIndents(indent);
         System.out.printf("%d\n", value2);
       } else if (isFourNode()) {
-        if (!isLeaf())
+        if (!isLeaf)
           centerLeftChild.printInOrder(indent + 1);
         printIndents(indent);
         System.out.printf("%d\n", value2);
-        if (!isLeaf())
+        if (!isLeaf)
           centerRightChild.printInOrder(indent + 1);
         printIndents(indent);
         System.out.printf("%d\n", value3);
       }
-      if (!isLeaf())
+      if (!isLeaf)
         rightChild.printInOrder(indent + 1);
     }
   }
@@ -177,6 +173,10 @@ public class TwoFourTree {
       // Reassign the root
 
       this.root = newRoot;
+      
+      // New root is not a leaf
+
+      this.root.isLeaf = false;
 
       return newRoot;
     }
@@ -546,6 +546,9 @@ public class TwoFourTree {
         // Done!
       }
     }
+    
+    // If successfully performed split, then the parent can no longer be a leaf 
+    target.parent.isLeaf = false;
 
     return target.parent;
   }
@@ -565,7 +568,7 @@ public class TwoFourTree {
 
     while (current != null) {
       // Stop when a leaf is hit
-      if (current.isLeaf()) {
+      if (current.isLeaf) {
 
         /*
          * System.out.println("Stopping...");
@@ -772,7 +775,7 @@ public class TwoFourTree {
     return false;
   }
 
-  public boolean deleteValue(int value) { return false; }
+  public boolean deleteValue(int value) { return true; }
 
   // Helper
 

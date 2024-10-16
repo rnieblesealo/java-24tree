@@ -33,15 +33,18 @@ public class Main {
     TwoFourTree tree = new TwoFourTree();
 
     // Make a random tree
+    int amtValuesToAdd = 10;
+    int[] valuesToAdd =
+        generateUniqueArray(amtValuesToAdd, 0, 2 * amtValuesToAdd);
 
-    int amtValuesToAdd = 10000000;
-    int[] valuesToAdd = generateUniqueArray(amtValuesToAdd, 0, 2 * amtValuesToAdd);
+    // int[] valuesToAdd = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     for (int i = 0; i < valuesToAdd.length; ++i) {
       tree.addValue(valuesToAdd[i]);
     }
 
-    tree.printInOrder();
+    // tree.printInOrder();
+    tree.printFromRoot();
 
     // Perform some random checks
 
@@ -56,7 +59,4 @@ public class Main {
                          " in? : " + tree.hasValue(randomCheck));
     }
   }
-
-  // Shit works but is slow AS FUCK
-  // nvm shit is fast as FUCK the slow part is printing :) 
 }
