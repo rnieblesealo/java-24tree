@@ -1101,12 +1101,12 @@ public class TwoFourTree {
           parent.values--;
 
           // Scoot borrower's children to the left
-          current.leftChild = current.centerChild;
           current.centerChild = current.rightChild;
 
           // And then attach what used to be the parent's center child to the right
           if (parent.centerChild != null) {
             current.rightChild = parent.centerChild;
+            parent.centerChild = null;
             current.rightChild.parent = current;
           }
 
@@ -1131,6 +1131,7 @@ public class TwoFourTree {
           // Attach what used to be the parent's left child to the left
           if (parent.leftChild != null) {
             current.leftChild = parent.leftChild;
+            parent.leftChild = null;
             current.leftChild.parent = current;
           }
         }
@@ -1152,6 +1153,7 @@ public class TwoFourTree {
           // Attach what used to be the parent's center child to the left
           if (parent.centerChild != null) {
             current.leftChild = parent.centerChild;
+            parent.centerChild = null;
             current.leftChild.parent = current;
           }
 
@@ -1161,11 +1163,32 @@ public class TwoFourTree {
 
       else if (parent.isFourNode()) {
         if (isLeftChild) {
+          // Borrow parent-facing value 
+          current.value2 = parent.value1;
 
+          parent.value1 = parent.value2;
+          parent.value2 = parent.value3;
+          parent.value3 = -1;
+
+          // Shrink parent, grow merger
+          current.values++;
+          parent.values--;
+
+          // Scoot merger's children to the left
+          current.centerChild = current.rightChild;
+
+          // Yank parent's center left child to the right 
+          if (parent.centerLeftChild != null){
+            current.rightChild = parent.centerLeftChild;
+            parent.centerLeftChild = null;
+            current.rightChild.parent = current;
+          }
+
+          // Merge done!
         }
 
         else if (isCenterLeftChild) {
-
+                               
         }
 
         else if (isCenterRightChild) {
