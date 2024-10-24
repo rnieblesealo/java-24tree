@@ -1391,7 +1391,7 @@ public class TwoFourTree {
 
   // Testing
 
-  public void mergeTest() {
+  public void borrowTest() {
     this.root = new TwoFourTreeItem(3, 5);
 
     this.root.leftChild = new TwoFourTreeItem(1, 2);
@@ -1417,6 +1417,45 @@ public class TwoFourTree {
       printFromRoot();
     }
   }
+
+  public void mergeTest(){
+    this.root = new TwoFourTreeItem(30, 60); 
+    
+    this.root.leftChild = new TwoFourTreeItem(10);
+    this.root.centerChild = new TwoFourTreeItem(40);
+    this.root.rightChild = new TwoFourTreeItem(70);
+
+    
+    this.root.leftChild.parent = root; 
+    this.root.centerChild.parent = root; 
+    this.root.rightChild.parent = root; 
+    
+    this.root.leftChild.leftChild = new TwoFourTreeItem(5);
+    this.root.leftChild.rightChild = new TwoFourTreeItem(15);
+
+    this.root.leftChild.leftChild.parent = this.root.leftChild; 
+    this.root.leftChild.rightChild.parent = this.root.leftChild; 
+
+    this.root.centerChild.leftChild = new TwoFourTreeItem(35); 
+    this.root.centerChild.rightChild = new TwoFourTreeItem(50); 
+
+    this.root.centerChild.leftChild.parent = this.root.centerChild; 
+    this.root.centerChild.rightChild.parent = this.root.centerChild; 
+
+    this.root.rightChild.leftChild = new TwoFourTreeItem(65); 
+    this.root.rightChild.rightChild = new TwoFourTreeItem(80); 
+
+    this.root.rightChild.leftChild.parent = this.root.rightChild; 
+    this.root.rightChild.rightChild.parent = this.root.rightChild; 
+
+    printFromRoot();
+    
+    System.out.println("---");
+
+    merge(this.root.leftChild);
+
+    printFromRoot();
+  }  
 
   public TwoFourTree() {
     mergeTest();
