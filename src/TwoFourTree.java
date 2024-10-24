@@ -1104,9 +1104,10 @@ public class TwoFourTree {
           current.centerChild = current.rightChild;
 
           // And then attach what used to be the parent's center child to the right
-          if (parent.centerChild != null) {
-            current.rightChild = parent.centerChild;
-            parent.centerChild = null;
+          current.rightChild = parent.centerChild;
+          parent.centerChild = null;
+
+          if (current.rightChild != null) {
             current.rightChild.parent = current;
           }
 
@@ -1129,9 +1130,10 @@ public class TwoFourTree {
           current.centerChild = current.leftChild;
 
           // Attach what used to be the parent's left child to the left
-          if (parent.leftChild != null) {
-            current.leftChild = parent.leftChild;
-            parent.leftChild = null;
+          current.leftChild = parent.leftChild;
+          parent.leftChild = null;
+
+          if (current.leftChild != null) {
             current.leftChild.parent = current;
           }
         }
@@ -1151,9 +1153,10 @@ public class TwoFourTree {
           current.centerChild = current.leftChild;
 
           // Attach what used to be the parent's center child to the left
-          if (parent.centerChild != null) {
-            current.leftChild = parent.centerChild;
-            parent.centerChild = null;
+          current.leftChild = parent.centerChild;
+          parent.centerChild = null;
+
+          if (current.leftChild != null) {
             current.leftChild.parent = current;
           }
 
@@ -1163,7 +1166,7 @@ public class TwoFourTree {
 
       else if (parent.isFourNode()) {
         if (isLeftChild) {
-          // Borrow parent-facing value 
+          // Borrow parent-facing value
           current.value2 = parent.value1;
 
           parent.value1 = parent.value2;
@@ -1177,10 +1180,11 @@ public class TwoFourTree {
           // Scoot merger's children to the left
           current.centerChild = current.rightChild;
 
-          // Yank parent's center left child to the right 
-          if (parent.centerLeftChild != null){
-            current.rightChild = parent.centerLeftChild;
-            parent.centerLeftChild = null;
+          // Yank parent's center left child to the right
+          current.rightChild = parent.centerLeftChild;
+          parent.centerLeftChild = null;
+
+          if (current.rightChild != null) {
             current.rightChild.parent = current;
           }
 
@@ -1188,16 +1192,84 @@ public class TwoFourTree {
         }
 
         else if (isCenterLeftChild) {
-                               
+          // Borrow parent-facing value
+          current.value2 = current.value1;
+          current.value1 = parent.value1;
+
+          parent.value1 = parent.value2;
+          parent.value2 = parent.value3;
+          parent.value3 = -1;
+
+          // Shrink parent, grow merger
+          current.values++;
+          parent.values--;
+
+          // Scoot merger children to the right
+          current.centerChild = current.leftChild;
+
+          // Yank parent left child
+          current.leftChild = parent.leftChild;
+          parent.leftChild = null;
+
+          if (current.leftChild != null) {
+            current.leftChild.parent = current;
+          }
+
+          // Merge done!
         }
 
         else if (isCenterRightChild) {
+          // Borrow parent-facing value
+          current.value2 = current.value1;
+          current.value1 = parent.value2;
 
+          parent.value2 = parent.value3;
+          parent.value3 = -1;
+
+          // Shrink parent, grow merger
+          current.values++;
+          parent.values--;
+
+          // Scoot merger children to the right
+          current.centerChild = current.leftChild;
+
+          // Yank parent center left child
+          current.leftChild = parent.centerLeftChild;
+          parent.centerLeftChild = null;
+
+          if (current.leftChild != null) {
+            current.leftChild.parent = current;
+          }
+
+          // Merge done!
         }
 
-        else if (isCenterRightChild) {
+        else if (isRightChild) {
+          // Borrow parent-facing value
+          current.value2 = current.value1;
+          current.value1 = parent.value3;
 
+          parent.value3 = -1;
+
+          // Shrink parent, grow merger
+          current.values++;
+          parent.values--;
+
+          // Scoot merger children
+          current.centerChild = current.leftChild;
+
+          // Yank parent center right child
+          current.leftChild = parent.centerRightChild;
+          parent.centerLeftChild = null;
+
+          if (current.leftChild != null) {
+            current.leftChild.parent = current;
+          }
+
+          // Merge done!
         }
+
+        return current;
       }
     }
 
