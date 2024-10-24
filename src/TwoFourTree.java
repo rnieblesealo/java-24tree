@@ -748,7 +748,7 @@ public class TwoFourTree {
     return false;
   }
 
-  TwoFourTreeItem merge(TwoFourTreeItem current) {
+  void merge(TwoFourTreeItem current) {
     while (current.isTwoNode()) {
 
       if (current.isRoot()) {
@@ -788,7 +788,7 @@ public class TwoFourTree {
           current.rightChild.parent = current;
         }
 
-        return current;
+        return;
       }
 
       // The rest of this happens for internal nodes only
@@ -1009,7 +1009,7 @@ public class TwoFourTree {
         }
 
         // Left borrow is done!
-        return current;
+        return;
       }
 
       else if (borrowingFromRight) {
@@ -1051,7 +1051,7 @@ public class TwoFourTree {
         }
 
         // Right borrow is done!
-        return current;
+        return;
       }
 
       // We arrive here if borrowing from siblings wasn't possible
@@ -1086,7 +1086,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         else if (isCenterChild) {
@@ -1113,7 +1113,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         else if (isRightChild) {
@@ -1139,7 +1139,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
       }
 
@@ -1168,7 +1168,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         else if (isCenterLeftChild) {
@@ -1196,7 +1196,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         else if (isCenterRightChild) {
@@ -1223,7 +1223,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         else if (isRightChild) {
@@ -1249,12 +1249,12 @@ public class TwoFourTree {
           }
 
           // Merge done!
-          return current;
+          return;
         }
 
         System.out.println("I'm pretty sure this case can't be hit...");
 
-        return current;
+        return;
       }
 
       // If we get here, neither merge nor borrow worked, which means we need to move
@@ -1262,7 +1262,7 @@ public class TwoFourTree {
 
       System.out.println("Could not merge with parent... Rebasing to it!");
 
-      current = merge(current.parent);
+      merge(current.parent);
 
       System.out.print("Back from parent, ");
       printSingleNode(" returned to", current);
@@ -1274,7 +1274,7 @@ public class TwoFourTree {
       }
     }
 
-    return current;
+    return;
   }
 
   public boolean deleteValue(int value) {
@@ -1332,35 +1332,8 @@ public class TwoFourTree {
     if (root != null)
       root.printInOrder(0);
   }
-
+  
   // Testing
-
-  public void borrowTest() {
-    this.root = new TwoFourTreeItem(3, 5);
-
-    this.root.leftChild = new TwoFourTreeItem(1, 2);
-    this.root.centerChild = new TwoFourTreeItem(4);
-    this.root.rightChild = new TwoFourTreeItem(6);
-
-    this.root.leftChild.parent = root;
-    this.root.centerChild.parent = root;
-    this.root.rightChild.parent = root;
-
-    printFromRoot();
-
-    System.out.println("---");
-
-    TwoFourTreeItem target = this.root.leftChild;
-    TwoFourTreeItem result = merge(target);
-
-    if (result == null) {
-      System.out.println("Could not borrow");
-    }
-
-    else {
-      printFromRoot();
-    }
-  }
 
   public void mergeTest() {
     this.root = new TwoFourTreeItem(30, 60);
