@@ -748,40 +748,9 @@ public class TwoFourTree {
     return false;
   }
 
-  int getValueNumber(TwoFourTreeItem node, int value) {
-    // Get position of value in given node; -1 if value isn't in the node
-
-    if (node.value1 == value) {
-      return 1;
-    }
-
-    if (node.value2 == value) {
-      return 2;
-    }
-
-    if (node.value3 == value) {
-      return 3;
-    }
-
-    return -1;
-  }
-
-  TwoFourTreeItem getSuccessor(TwoFourTreeItem current, int value) {
-    // If current doesn't contain the value then this search is impossible
-    if (getValueNumber(current, value) == -1) {
-      return current;
-    }
-
-    // If leaf, no need to find successor
-    if (current.isLeaf) {
-      return current;
-    }
-
-    return current;
-  }
-
   TwoFourTreeItem merge(TwoFourTreeItem current) {
     while (current.isTwoNode()) {
+
       if (current.isRoot()) {
         // Push values to root
         current.value2 = current.value1;
@@ -853,7 +822,7 @@ public class TwoFourTree {
 
       else if (parent.isThreeNode()) {
         if (isLeftChild) {
-          leftSibling = parent.centerChild;
+          rightSibling = parent.centerChild;
         }
 
         else if (isCenterChild) {
@@ -1085,8 +1054,13 @@ public class TwoFourTree {
         return current;
       }
 
-      // If borrowing wasn't possible, we'll reach this point, at which we'll try to
-      // merge
+      // We arrive here if borrowing from siblings wasn't possible
+      System.out.println("\nCannot borrow... ");
+      printSingleNode("L sib", leftSibling);
+      printSingleNode("R sib", rightSibling);
+      System.out.print("\nTrying merge with ");
+      printSingleNode("parent", parent);
+      System.out.println();
 
       if (parent.isThreeNode()) {
         if (isLeftChild) {
@@ -1112,6 +1086,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
 
         else if (isCenterChild) {
@@ -1136,6 +1111,9 @@ public class TwoFourTree {
           if (current.leftChild != null) {
             current.leftChild.parent = current;
           }
+
+          // Merge done!
+          return current;
         }
 
         else if (isRightChild) {
@@ -1161,6 +1139,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
       }
 
@@ -1189,6 +1168,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
 
         else if (isCenterLeftChild) {
@@ -1216,6 +1196,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
 
         else if (isCenterRightChild) {
@@ -1242,6 +1223,7 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
 
         else if (isRightChild) {
@@ -1267,9 +1249,28 @@ public class TwoFourTree {
           }
 
           // Merge done!
+          return current;
         }
 
+        System.out.println("I'm pretty sure this case can't be hit...");
+
         return current;
+      }
+
+      // If we get here, neither merge nor borrow worked, which means we need to move
+      // to the parent and then come back and try again
+
+      System.out.println("Could not merge with parent... Rebasing to it!");
+
+      current = merge(current.parent);
+
+      System.out.print("Back from parent, ");
+      printSingleNode(" returned to", current);
+
+      System.out.println();
+
+      if (current.isTwoNode()) {
+        System.out.println("Trying again!");
       }
     }
 
@@ -1277,88 +1278,30 @@ public class TwoFourTree {
   }
 
   public boolean deleteValue(int value) {
-    TwoFourTreeItem current = this.root;
-    while (current != null) {
-      // Check if key is in current node; then get its successor and replace
-      if (current.value1 == value) {
-        // TwoFourTreeItem successor = getSuccessor(value);
-      }
-
-      else if (current.value2 == value) {
-        // TwoFourTreeItem successor = getSuccessor(value);
-      }
-
-      else if (current.value3 == value) {
-        // TwoFourTreeItem successor = getSuccessor(value);
-      }
-
-      // Keep walking
-      else {
-        if (current.isTwoNode()) {
-          if (value < current.value1) {
-            current = current.leftChild;
-          }
-
-          else {
-            current = current.rightChild;
-          }
-        }
-
-        else if (current.isThreeNode()) {
-          if (value < current.value1) {
-            current = current.leftChild;
-          }
-
-          else if (value >= current.value1 && value <= current.value2) {
-            current = current.centerChild;
-          }
-
-          else {
-            current = current.rightChild;
-          }
-        }
-
-        else if (current.isFourNode()) {
-          if (value < current.value1) {
-            current = current.leftChild;
-          }
-
-          else if (value >= current.value1 && value < current.value2) {
-            current = current.centerLeftChild;
-          }
-
-          else if (value >= current.value2 && value <= current.value3) {
-            current = current.centerLeftChild;
-          }
-
-          else {
-            current = current.rightChild;
-          }
-        }
-      }
-    }
-
     return false;
-
   }
 
   // Helper
 
   private void printSingleNode(String identifier, TwoFourTreeItem item) {
+    if (item == null) {
+      return;
+    }
+
     switch (item.values) {
       case 1:
-        System.out.printf("%s : [ %d ]\n", identifier, item.value1);
+        System.out.printf("%s : [ %d ]", identifier, item.value1);
         break;
       case 2:
-        System.out.printf("%s : [ %d | %d ]\n", identifier, item.value1,
+        System.out.printf("%s : [ %d | %d ]", identifier, item.value1,
             item.value2);
         break;
       case 3:
-        System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
+        System.out.printf("%s : [ %d | %d | %d ]", identifier, item.value1,
             item.value2, item.value3);
         break;
       default:
-        System.out.printf("%s : INVALID VALUE COUNT\n");
+        System.out.printf("%s : INVALID VALUE COUNT");
         break;
     }
   }
@@ -1370,6 +1313,7 @@ public class TwoFourTree {
     }
 
     printSingleNode(identifier, item);
+    System.out.println();
 
     printTree(identifier + " -> l", item.leftChild);
     printTree(identifier + " -> cl", item.centerLeftChild);
@@ -1418,44 +1362,43 @@ public class TwoFourTree {
     }
   }
 
-  public void mergeTest(){
-    this.root = new TwoFourTreeItem(30, 60); 
-    
+  public void mergeTest() {
+    this.root = new TwoFourTreeItem(30, 60);
+
     this.root.leftChild = new TwoFourTreeItem(10);
     this.root.centerChild = new TwoFourTreeItem(40);
     this.root.rightChild = new TwoFourTreeItem(70);
 
-    
-    this.root.leftChild.parent = root; 
-    this.root.centerChild.parent = root; 
-    this.root.rightChild.parent = root; 
-    
+    this.root.leftChild.parent = root;
+    this.root.centerChild.parent = root;
+    this.root.rightChild.parent = root;
+
     this.root.leftChild.leftChild = new TwoFourTreeItem(5);
     this.root.leftChild.rightChild = new TwoFourTreeItem(15);
 
-    this.root.leftChild.leftChild.parent = this.root.leftChild; 
-    this.root.leftChild.rightChild.parent = this.root.leftChild; 
+    this.root.leftChild.leftChild.parent = this.root.leftChild;
+    this.root.leftChild.rightChild.parent = this.root.leftChild;
 
-    this.root.centerChild.leftChild = new TwoFourTreeItem(35); 
-    this.root.centerChild.rightChild = new TwoFourTreeItem(50); 
+    this.root.centerChild.leftChild = new TwoFourTreeItem(35);
+    this.root.centerChild.rightChild = new TwoFourTreeItem(50);
 
-    this.root.centerChild.leftChild.parent = this.root.centerChild; 
-    this.root.centerChild.rightChild.parent = this.root.centerChild; 
+    this.root.centerChild.leftChild.parent = this.root.centerChild;
+    this.root.centerChild.rightChild.parent = this.root.centerChild;
 
-    this.root.rightChild.leftChild = new TwoFourTreeItem(65); 
-    this.root.rightChild.rightChild = new TwoFourTreeItem(80); 
+    this.root.rightChild.leftChild = new TwoFourTreeItem(65);
+    this.root.rightChild.rightChild = new TwoFourTreeItem(80);
 
-    this.root.rightChild.leftChild.parent = this.root.rightChild; 
-    this.root.rightChild.rightChild.parent = this.root.rightChild; 
+    this.root.rightChild.leftChild.parent = this.root.rightChild;
+    this.root.rightChild.rightChild.parent = this.root.rightChild;
 
     printFromRoot();
-    
+
     System.out.println("---");
 
-    merge(this.root.leftChild);
+    merge(this.root.leftChild.leftChild);
 
     printFromRoot();
-  }  
+  }
 
   public TwoFourTree() {
     mergeTest();
