@@ -1088,8 +1088,94 @@ public class TwoFourTree {
       // If borrowing wasn't possible, we'll reach this point, at which we'll try to
       // merge
 
-      // NOTE: Placeholder null for testing, isn't meant to be here!
-      return null;
+      if (parent.isThreeNode()) {
+        if (isLeftChild) {
+          // Borrow parent-facing value
+          current.value2 = parent.value1;
+
+          parent.value1 = parent.value2;
+          parent.value2 = -1;
+
+          // This shrinks the parent and grows the child
+          current.values++;
+          parent.values--;
+
+          // Scoot borrower's children to the left
+          current.leftChild = current.centerChild;
+          current.centerChild = current.rightChild;
+
+          // And then attach what used to be the parent's center child to the right
+          if (parent.centerChild != null) {
+            current.rightChild = parent.centerChild;
+            current.rightChild.parent = current;
+          }
+
+          // Merge done!
+        }
+
+        else if (isCenterChild) {
+          // Borrow parent-facing value
+          current.value2 = current.value1;
+          current.value1 = parent.value1;
+
+          parent.value1 = parent.value2;
+          parent.value2 = -1;
+
+          // Shrink parent, grow child
+          current.values++;
+          parent.values--;
+
+          // Scoot borrower's children to the right
+          current.centerChild = current.leftChild;
+
+          // Attach what used to be the parent's left child to the left
+          if (parent.leftChild != null) {
+            current.leftChild = parent.leftChild;
+            current.leftChild.parent = current;
+          }
+        }
+
+        else if (isRightChild) {
+          // Borrow parent-facing value
+          current.value2 = current.value1;
+          current.value1 = parent.value2;
+
+          parent.value2 = -1;
+
+          // Shrink parent, grow child
+          current.values++;
+          parent.values--;
+
+          // Scoot borrower children to the right
+          current.centerChild = current.leftChild;
+
+          // Attach what used to be the parent's center child to the left
+          if (parent.centerChild != null) {
+            current.leftChild = parent.centerChild;
+            current.leftChild.parent = current;
+          }
+
+          // Merge done!
+        }
+      }
+
+      else if (parent.isFourNode()) {
+        if (isLeftChild) {
+
+        }
+
+        else if (isCenterLeftChild) {
+
+        }
+
+        else if (isCenterRightChild) {
+
+        }
+
+        else if (isCenterRightChild) {
+
+        }
+      }
     }
 
     return current;
