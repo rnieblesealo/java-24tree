@@ -160,7 +160,7 @@ public class TwoFourTree {
       newRight.leftChild = centerRightChild;
       newRight.rightChild = rightChild;
 
-      // FIX: the newly set children may be nulls; account for this
+      // the newly set children may be nulls; account for this
 
       if (newRight.leftChild != null) {
         newRight.leftChild.parent = newRight;
@@ -274,8 +274,8 @@ public class TwoFourTree {
 
         parent.centerChild = newNode;
 
-        // FIX: Do parent links
-        // FIX: Account for null accesses by using if-guards
+        // Do parent links
+        // Account for null accesses by using if-guards
 
         // Old 4-node's center left and right child are now this node's left and
         // right
@@ -335,8 +335,8 @@ public class TwoFourTree {
 
         // Bind kept children as its left and right
 
-        // FIX: Do parent links
-        // FIX: Account for nullity
+        // Do parent links
+        // Account for nullity
 
         newNode.parent = parent;
 
@@ -381,7 +381,7 @@ public class TwoFourTree {
 
         target.values -= 2;
 
-        // FIX: Give correct right child, unbind excess definitions
+        // Give correct right child, unbind excess definitions
 
         target.rightChild = target.centerLeftChild;
 
@@ -401,8 +401,8 @@ public class TwoFourTree {
         parent.centerLeftChild.leftChild = centerRightChild;
         parent.centerLeftChild.rightChild = rightChild;
 
-        // FIX: Do parent links
-        // FIX: Account for nullity
+        // Do parent links
+        // Account for nullity
 
         newNode.parent = parent;
 
@@ -464,8 +464,8 @@ public class TwoFourTree {
         parent.centerRightChild.leftChild = centerRightChild;
         parent.centerRightChild.rightChild = rightChild;
 
-        // FIX: Do parent links
-        // FIX: Account for nullity
+        // Do parent links
+        // Account for nullity
 
         newNode.parent = parent;
 
@@ -530,8 +530,8 @@ public class TwoFourTree {
         parent.centerRightChild.leftChild = leftChild;
         parent.centerRightChild.rightChild = centerLeftChild;
 
-        // FIX: Do parent links
-        // FIX: Account for nullity
+        // Do parent links
+        // Account for nullity
 
         newNode.parent = parent;
 
@@ -570,19 +570,9 @@ public class TwoFourTree {
       // Stop when a leaf is hit
       if (current.isLeaf) {
 
-        /*
-         * System.out.println("Stopping...");
-         * printSingleNode("CURR AT STOP", current);
-         */
-
         // Split leaf 4-node if necessary, moving current to its parent
         if (current.isFourNode()) {
-
-          // System.out.println("Doing split...");
-
           current = split(current);
-
-          // printSingleNode("CURR AFTER SPLIT", current);
         }
 
         // If not, perform insertion
@@ -620,11 +610,6 @@ public class TwoFourTree {
 
           // Adding a value increases node value count!
           current.values++;
-
-          /*
-           * System.out.println("Insertion done!");
-           * printSingleNode("CURR AFTER INSERTION", current);
-           */
 
           // Insertion is done, so stop!
           break;
@@ -838,7 +823,6 @@ public class TwoFourTree {
       }
 
       // The rest of this happens for internal nodes only
-
       // Check if we can borrow (at least one sibling isn't null isn't a 2-node)
 
       TwoFourTreeItem parent = current.parent;
@@ -1247,7 +1231,7 @@ public class TwoFourTree {
     if (result == null) {
       System.out.println("Could not borrow");
     }
-    
+
     else {
       printFromRoot();
     }
