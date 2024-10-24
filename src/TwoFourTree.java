@@ -173,7 +173,7 @@ public class TwoFourTree {
       // Reassign the root
 
       this.root = newRoot;
-      
+
       // New root is not a leaf
 
       this.root.isLeaf = false;
@@ -546,8 +546,8 @@ public class TwoFourTree {
         // Done!
       }
     }
-    
-    // If successfully performed split, then the parent can no longer be a leaf 
+
+    // If successfully performed split, then the parent can no longer be a leaf
     target.parent.isLeaf = false;
 
     return target.parent;
@@ -633,13 +633,7 @@ public class TwoFourTree {
 
       // If no leaf hit, traverse downward
       else {
-
-        // System.out.println("Walking...");
-
         if (current.isTwoNode()) {
-
-          // System.out.println("Moving from 2node...");
-
           if (value < current.value1) {
             current = current.leftChild;
           }
@@ -650,9 +644,6 @@ public class TwoFourTree {
         }
 
         else if (current.isThreeNode()) {
-
-          // System.out.println("Moving from 3node...");
-
           if (value < current.value1) {
             current = current.leftChild;
           }
@@ -667,9 +658,6 @@ public class TwoFourTree {
         }
 
         else if (current.isFourNode()) {
-
-          // System.out.println("Moving from 4node...");
-
           if (value < current.value1) {
             current = current.leftChild;
           }
@@ -775,26 +763,438 @@ public class TwoFourTree {
     return false;
   }
 
-  public boolean deleteValue(int value) { return true; }
+  int getValueNumber(TwoFourTreeItem node, int value) {
+    // Get position of value in given node; -1 if value isn't in the node
+
+    if (node.value1 == value) {
+      return 1;
+    }
+
+    if (node.value2 == value) {
+      return 2;
+    }
+
+    if (node.value3 == value) {
+      return 3;
+    }
+
+    return -1;
+  }
+
+  TwoFourTreeItem getSuccessor(TwoFourTreeItem current, int value) {
+    // If current doesn't contain the value then this search is impossible
+    if (getValueNumber(current, value) == -1) {
+      return current;
+    }
+
+    // If leaf, no need to find successor
+    if (current.isLeaf) {
+      return current;
+    }
+
+    return current;
+  }
+
+  TwoFourTreeItem merge(TwoFourTreeItem current) {
+    while (current.isTwoNode()) {
+      if (current.isRoot()) {
+        // Push values to root
+        current.value2 = current.value1;
+        current.value1 = current.leftChild.value1;
+        current.value3 = current.rightChild.value1;
+
+        // This results in 2 new values
+        current.values += 2;
+
+        // Redo links
+        TwoFourTreeItem oldLeftChild = current.leftChild;
+        TwoFourTreeItem oldRightChild = current.rightChild;
+
+        current.leftChild = null;
+        current.rightChild = null;
+
+        if (oldLeftChild.leftChild != null) {
+          current.leftChild = oldLeftChild.leftChild;
+          current.leftChild.parent = current;
+        }
+
+        if (oldLeftChild.rightChild != null) {
+          current.centerLeftChild = oldLeftChild.rightChild;
+          current.centerLeftChild.parent = current;
+        }
+
+        if (oldRightChild.leftChild != null) {
+          current.centerRightChild = oldRightChild.leftChild;
+          current.centerRightChild.parent = current;
+
+        }
+
+        if (oldRightChild.rightChild != null) {
+          current.rightChild = oldRightChild.rightChild;
+          current.rightChild.parent = current;
+        }
+
+        return current;
+      }
+
+      // The rest of this happens for internal nodes only
+
+      // Check if we can borrow (at least one sibling isn't null isn't a 2-node)
+
+      TwoFourTreeItem parent = current.parent;
+
+      TwoFourTreeItem leftSibling = null;
+      TwoFourTreeItem rightSibling = null;
+
+      boolean isLeftChild = current == parent.leftChild;
+      boolean isCenterChild = current == parent.centerChild;
+      boolean isCenterLeftChild = current == parent.centerLeftChild;
+      boolean isCenterRightChild = current == parent.centerRightChild;
+      boolean isRightChild = current == parent.rightChild;
+
+      int keyRotatedUp = -1;
+      int keyRotatedDown = -1;
+
+      // Grab adequate sibling
+
+      if (parent.isTwoNode()) {
+        if (isLeftChild) {
+          rightSibling = parent.rightChild;
+        }
+
+        else if (isRightChild) {
+          leftSibling = parent.leftChild;
+        }
+      }
+
+      else if (parent.isThreeNode()) {
+        if (isLeftChild) {
+          leftSibling = parent.centerChild;
+        }
+
+        else if (isCenterChild) {
+          leftSibling = parent.leftChild;
+          rightSibling = parent.rightChild;
+
+        }
+
+        else if (isRightChild) {
+          leftSibling = parent.centerChild;
+        }
+      }
+
+      else if (parent.isFourNode()) {
+        if (isLeftChild) {
+          rightSibling = parent.centerLeftChild;
+        }
+
+        else if (isCenterLeftChild) {
+          leftSibling = parent.leftChild;
+          rightSibling = parent.centerRightChild;
+        }
+
+        else if (isCenterRightChild) {
+          leftSibling = parent.centerLeftChild;
+          rightSibling = parent.rightChild;
+        }
+
+        else if (isRightChild) {
+          leftSibling = parent.centerRightChild;
+        }
+      }
+
+      // Grab adequate key to push up
+      // At this stage, we can pop that key from the child; it's okay since we're
+      // storing it
+      // Once we have the key, we officialize direction of borrow
+
+      boolean borrowingFromLeft = false;
+      boolean borrowingFromRight = false;
+
+      if (leftSibling != null && !leftSibling.isTwoNode()) {
+        borrowingFromLeft = true;
+
+        // Since we popped from the left's right, remove the rightmost value only
+        // Rearrange children as necessary
+
+        if (leftSibling.isThreeNode()) {
+          keyRotatedUp = leftSibling.value2;
+          leftSibling.value2 = -1;
+        }
+
+        else if (leftSibling.isFourNode()) {
+          keyRotatedUp = leftSibling.value3;
+          leftSibling.value3 = -1;
+        }
+
+        leftSibling.values--;
+      }
+
+      else if (rightSibling != null && !rightSibling.isTwoNode()) {
+        borrowingFromRight = true;
+
+        keyRotatedUp = rightSibling.value1;
+
+        // Since we popped from the right's left, move every value 1 over to the left to
+        // keep order
+
+        if (rightSibling.isThreeNode()) {
+          rightSibling.value1 = rightSibling.value2;
+        }
+
+        else if (rightSibling.isFourNode()) {
+          rightSibling.value1 = rightSibling.value2;
+          rightSibling.value2 = rightSibling.value3;
+        }
+
+        rightSibling.values--;
+      }
+
+      // Grab adequate key to push down
+
+      if (parent.isTwoNode()) {
+        keyRotatedDown = parent.value2;
+      }
+
+      else if (parent.isThreeNode()) {
+        if (borrowingFromLeft) {
+          if (isCenterChild) {
+            keyRotatedDown = parent.value1;
+          }
+
+          else if (isRightChild) {
+            keyRotatedDown = parent.value2;
+          }
+        }
+
+        else if (borrowingFromRight) {
+          if (isCenterChild) {
+            if (isLeftChild) {
+              keyRotatedDown = parent.value1;
+            }
+
+            else if (isCenterChild) {
+              keyRotatedDown = parent.value2;
+            }
+          }
+        }
+      }
+
+      else if (parent.isFourNode()) {
+        if (borrowingFromLeft) {
+          if (isCenterLeftChild) {
+            keyRotatedDown = parent.value1;
+          }
+
+          else if (isCenterRightChild) {
+            keyRotatedDown = parent.value2;
+          }
+
+          else if (isRightChild) {
+            keyRotatedDown = parent.value3;
+          }
+        }
+
+        else if (borrowingFromRight) {
+          if (isLeftChild) {
+            keyRotatedDown = parent.value1;
+          }
+
+          else if (isCenterLeftChild) {
+            keyRotatedDown = parent.value2;
+          }
+
+          else if (isCenterRightChild) {
+            keyRotatedDown = parent.value3;
+          }
+        }
+      }
+
+      // Now we should have everything we need to rotate! So atually try to borrow
+
+      if (borrowingFromLeft) {
+        // Pull parent value down, growing the borrower
+        current.value2 = current.value1;
+        current.value1 = keyRotatedDown;
+
+        current.values++;
+
+        // This makes the borrower's children "move one over" to fit the left sibling's
+        // right child
+        current.centerChild = current.leftChild;
+
+        if (leftSibling.rightChild != null) {
+          current.leftChild = leftSibling.rightChild;
+          current.leftChild.parent = current;
+        }
+
+        // Now push sibling's value up, replacing the parent's key
+        if (keyRotatedDown == parent.value1) {
+          parent.value1 = keyRotatedUp;
+        }
+
+        else if (keyRotatedDown == parent.value2) {
+          parent.value2 = keyRotatedUp;
+        }
+
+        else if (keyRotatedDown == parent.value3) {
+          parent.value3 = keyRotatedUp;
+        }
+
+        // This shrinks the lender sibling
+        // We already trimmed the value and used necessary child references
+        // Rearrange them as necessary depending on whether after shrinking it's a
+        // 3-node or 2-node
+
+        if (leftSibling.isTwoNode()) {
+          leftSibling.rightChild = leftSibling.centerChild;
+        }
+
+        else if (leftSibling.isThreeNode()) {
+          leftSibling.centerChild = leftSibling.centerLeftChild;
+          leftSibling.rightChild = leftSibling.centerRightChild;
+        }
+
+        // Left borrow is done!
+        return current;
+      }
+
+      else if (borrowingFromRight) {
+        // Pull parent value down
+        current.value2 = keyRotatedDown;
+
+        current.values++;
+
+        // Move over borrower's children and grab lender's left child
+        current.leftChild = current.centerChild;
+        current.centerChild = current.rightChild;
+
+        if (rightSibling.leftChild != null) {
+          current.rightChild = rightSibling.leftChild;
+          current.rightChild.parent = current;
+        }
+
+        // Push sibling value up
+        if (keyRotatedDown == parent.value1) {
+          parent.value1 = keyRotatedUp;
+        }
+
+        else if (keyRotatedDown == parent.value2) {
+          parent.value2 = keyRotatedUp;
+        }
+
+        else if (keyRotatedDown == parent.value3) {
+          parent.value3 = keyRotatedUp;
+        }
+
+        // Sibling already shrank; reaccomodate lender's children
+        if (rightSibling.isTwoNode()) {
+          rightSibling.leftChild = rightSibling.centerChild;
+        }
+
+        else if (rightSibling.isThreeNode()) {
+          rightSibling.leftChild = rightSibling.centerLeftChild;
+          rightSibling.centerChild = rightSibling.centerRightChild;
+        }
+
+        // Right borrow is done!
+        return current;
+      }
+
+      // If borrowing wasn't possible, we'll reach this point, at which we'll try to
+      // merge
+
+      // NOTE: Placeholder null for testing, isn't meant to be here!
+      return null;
+    }
+
+    return current;
+  }
+
+  public boolean deleteValue(int value) {
+    TwoFourTreeItem current = this.root;
+    while (current != null) {
+      // Check if key is in current node; then get its successor and replace
+      if (current.value1 == value) {
+        // TwoFourTreeItem successor = getSuccessor(value);
+      }
+
+      else if (current.value2 == value) {
+        // TwoFourTreeItem successor = getSuccessor(value);
+      }
+
+      else if (current.value3 == value) {
+        // TwoFourTreeItem successor = getSuccessor(value);
+      }
+
+      // Keep walking
+      else {
+        if (current.isTwoNode()) {
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else {
+            current = current.rightChild;
+          }
+        }
+
+        else if (current.isThreeNode()) {
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else if (value >= current.value1 && value <= current.value2) {
+            current = current.centerChild;
+          }
+
+          else {
+            current = current.rightChild;
+          }
+        }
+
+        else if (current.isFourNode()) {
+          if (value < current.value1) {
+            current = current.leftChild;
+          }
+
+          else if (value >= current.value1 && value < current.value2) {
+            current = current.centerLeftChild;
+          }
+
+          else if (value >= current.value2 && value <= current.value3) {
+            current = current.centerLeftChild;
+          }
+
+          else {
+            current = current.rightChild;
+          }
+        }
+      }
+    }
+
+    return false;
+
+  }
 
   // Helper
 
   private void printSingleNode(String identifier, TwoFourTreeItem item) {
     switch (item.values) {
-    case 1:
-      System.out.printf("%s : [ %d ]\n", identifier, item.value1);
-      break;
-    case 2:
-      System.out.printf("%s : [ %d | %d ]\n", identifier, item.value1,
-                        item.value2);
-      break;
-    case 3:
-      System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
-                        item.value2, item.value3);
-      break;
-    default:
-      System.out.printf("%s : INVALID VALUE COUNT\n");
-      break;
+      case 1:
+        System.out.printf("%s : [ %d ]\n", identifier, item.value1);
+        break;
+      case 2:
+        System.out.printf("%s : [ %d | %d ]\n", identifier, item.value1,
+            item.value2);
+        break;
+      case 3:
+        System.out.printf("%s : [ %d | %d | %d ]\n", identifier, item.value1,
+            item.value2, item.value3);
+        break;
+      default:
+        System.out.printf("%s : INVALID VALUE COUNT\n");
+        break;
     }
   }
 
@@ -813,7 +1213,9 @@ public class TwoFourTree {
     printTree(identifier + " -> r", item.rightChild);
   }
 
-  public void printFromRoot() { printTree("root", this.root); }
+  public void printFromRoot() {
+    printTree("root", this.root);
+  }
 
   // Gerber Helper
 
@@ -822,5 +1224,36 @@ public class TwoFourTree {
       root.printInOrder(0);
   }
 
-  public TwoFourTree() {}
+  // Testing
+
+  public void mergeTest() {
+    this.root = new TwoFourTreeItem(3, 5);
+
+    this.root.leftChild = new TwoFourTreeItem(1, 2);
+    this.root.centerChild = new TwoFourTreeItem(4);
+    this.root.rightChild = new TwoFourTreeItem(6);
+
+    this.root.leftChild.parent = root;
+    this.root.centerChild.parent = root;
+    this.root.rightChild.parent = root;
+
+    printFromRoot();
+
+    System.out.println("---");
+
+    TwoFourTreeItem target = this.root.leftChild;
+    TwoFourTreeItem result = merge(target);
+
+    if (result == null) {
+      System.out.println("Could not borrow");
+    }
+    
+    else {
+      printFromRoot();
+    }
+  }
+
+  public TwoFourTree() {
+    mergeTest();
+  }
 }

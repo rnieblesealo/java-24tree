@@ -31,7 +31,8 @@ public class Main {
 
   public static void main(String[] args) {
     TwoFourTree tree = new TwoFourTree();
-
+    
+    /*
     // Make a random tree
     int amtValuesToAdd = 10;
     int[] valuesToAdd =
@@ -58,5 +59,6 @@ public class Main {
       System.out.println("Is " + randomCheck +
                          " in? : " + tree.hasValue(randomCheck));
     }
+    */
   }
 }
