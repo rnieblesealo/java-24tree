@@ -61,25 +61,6 @@ public class TwoFourTree {
       this.value3 = value3;
     }
 
-    public TwoFourTreeItem(TwoFourTreeItem copyDest) {
-      // Copies an existing node
-      //
-      values = copyDest.values;
-      isLeaf = copyDest.isLeaf;
-
-      this.parent = copyDest.parent;
-
-      this.value1 = copyDest.value1;
-      this.value2 = copyDest.value2;
-      this.value3 = copyDest.value3;
-
-      this.leftChild = copyDest.leftChild;
-      this.rightChild = copyDest.rightChild;
-
-      this.centerLeftChild = copyDest.centerLeftChild;
-      this.centerRightChild = copyDest.centerRightChild;
-    }
-
     // Gerber Helper
 
     private void printIndents(int indent) {
@@ -681,7 +662,7 @@ public class TwoFourTree {
       }
     }
 
-    return false;
+    return true;
   }
 
   public boolean hasValue(int value) {
@@ -762,7 +743,7 @@ public class TwoFourTree {
       }
     }
 
-    // If we go past a leaf there ain't no way the value exists
+    // If we go past a leaf the value can't exist
 
     return false;
   }
@@ -778,14 +759,7 @@ public class TwoFourTree {
       return;
     }
 
-    System.out.print("Trying to merge");
-    printSingleNode(" this node", current);
-    System.out.println("...");
-
     // First, try to borrow
-
-    // The rest of this happens for internal nodes only
-    // Check if we can borrow (at least one sibling isn't null isn't a 2-node)
 
     TwoFourTreeItem parent = current.parent;
 
@@ -858,8 +832,6 @@ public class TwoFourTree {
     boolean borrowingFromRight = false;
 
     if (leftSibling != null && !leftSibling.isTwoNode()) {
-      System.out.println("Left borrow case hit");
-
       borrowingFromLeft = true;
 
       // Since we popped from the left's right, remove the rightmost value only
@@ -879,8 +851,6 @@ public class TwoFourTree {
     }
 
     else if (rightSibling != null && !rightSibling.isTwoNode()) {
-      System.out.println("Right borrow case hit");
-
       borrowingFromRight = true;
 
       keyRotatedUp = rightSibling.value1;
@@ -962,12 +932,7 @@ public class TwoFourTree {
 
     // Now we should have everything we need to rotate! So atually try to borrow
 
-    System.out.printf("Down key: %d\nUp key: %d\n", keyRotatedDown, keyRotatedUp);
-
     if (borrowingFromLeft) {
-      System.out.print("Borrowing from");
-      printSingleNode(" left sibling", leftSibling);
-      System.out.println("!");
 
       // Pull parent value down, growing the borrower
       current.value2 = current.value1;
@@ -1011,21 +976,11 @@ public class TwoFourTree {
         leftSibling.rightChild = leftSibling.centerRightChild;
       }
 
-      printSingleNode("Left sibling after borrow", leftSibling);
-      System.out.println();
-      printSingleNode("Parent after borrow", parent);
-      System.out.println();
-      printSingleNode("Current after borrow", current);
-      System.out.println();
-
       // Left borrow is done!
       return;
     }
 
     else if (borrowingFromRight) {
-      System.out.print("Borrowing from");
-      printSingleNode(" right sibling", rightSibling);
-      System.out.println("!");
 
       // Pull parent value down
       current.value2 = keyRotatedDown;
@@ -1068,13 +1023,6 @@ public class TwoFourTree {
         rightSibling.centerRightChild = null;
       }
 
-      printSingleNode("Left sibling after borrow", leftSibling);
-      System.out.println();
-      printSingleNode("Parent after borrow", parent);
-      System.out.println();
-      printSingleNode("Current after borrow", current);
-      System.out.println();
-
       // Right borrow is done!
       return;
     }
@@ -1084,7 +1032,6 @@ public class TwoFourTree {
     // Try special merge with 2-node root first...
 
     if (current.isRoot() || (current.parent.isRoot() && current.parent.isTwoNode())) {
-      System.out.println("Couldn't borrow; merging root...");
 
       if (isLeftChild) {
         // Push values to parent
@@ -1102,11 +1049,6 @@ public class TwoFourTree {
         current.rightChild = current.parent.rightChild.rightChild;
 
         // Do links!
-        // Will this null?
-        // God I hope not
-        // I've been programming for 9 hours
-        // After a physics midterm...
-        // I just wanna go home...
         if (current.leftChild != null) {
           current.leftChild.parent = current;
         }
@@ -1127,7 +1069,6 @@ public class TwoFourTree {
         current.parent = null;
         root = current;
 
-        printSingleNode("Result root", root);
         System.out.println();
 
         return;
@@ -1170,31 +1111,16 @@ public class TwoFourTree {
         current.parent = null;
         root = current;
 
-        printSingleNode("Result root", root);
         System.out.println();
 
         return;
-      }
-
-      // Reach here if we're doing this from the root
-      else {
-
       }
     }
 
     // If merging with non-root parent isn't possible either, move up
     if (!parent.isThreeNode() && !parent.isFourNode()) {
-      printSingleNode("This node", current);
-      System.out.print(" cannot merge with its ");
-      printSingleNode("parent ", parent);
-      System.out.println("; moving up to it!");
       merge(parent);
     }
-
-    printSingleNode("Node", current);
-    System.out.print(" is now merging with ");
-    printSingleNode("parent", parent);
-    System.out.println();
 
     // Need to update these! They might've been moved around
     isLeftChild = current == parent.leftChild;
@@ -1756,11 +1682,7 @@ public class TwoFourTree {
 
     while (getKeyPosition(current, value) == -1) {
 
-      printSingleNode("Traverse at", current);
-      System.out.println();
-
       if (current == null) {
-        System.out.println("Did not find deletion target!");
         return false;
       }
 
@@ -1812,14 +1734,9 @@ public class TwoFourTree {
     // Get position of the key we're trying to delete in the current node
     int keyIndex = getKeyPosition(current, value);
 
-    printSingleNode("Found deletion target", current);
-    System.out.println();
-
     // If not leaf, do successor
     if (!current.isLeaf) {
       TwoFourTreeItem successor = getSuccessor(current, value);
-      printSingleNode("Successor", successor);
-      System.out.println();
 
       // Get the successor key, value, and tag the place it was at with a new delete
       // key
@@ -1842,8 +1759,6 @@ public class TwoFourTree {
           break;
       }
 
-      System.out.printf("Successor key, index: %d %d\n", successorKey, successorKeyIndex);
-
       // Replace current for the successor key's value
       switch (keyIndex) {
         case 1:
@@ -1857,14 +1772,11 @@ public class TwoFourTree {
           break;
       }
 
-      printSingleNode("Current after swap", current);
-
       // Change deletion target to symbolic value and move to successor
       value = successor.value1;
       keyIndex = successorKeyIndex;
       current = successor;
 
-      System.out.println("Moving to successor...");
     }
 
     // Try direct delete once...
@@ -1892,7 +1804,7 @@ public class TwoFourTree {
       }
     }
 
-    // Fallback to false
+    // Get here if deletion failed very badly
     return false;
   }
 
@@ -1954,54 +1866,6 @@ public class TwoFourTree {
   public void printInOrder() {
     if (root != null)
       root.printInOrder(0);
-  }
-
-  // Testing
-
-  public void deletionTest() {
-    this.root = new TwoFourTreeItem(30, 60);
-
-    this.root.isLeaf = false;
-
-    this.root.leftChild = new TwoFourTreeItem(10);
-    this.root.centerChild = new TwoFourTreeItem(40);
-    this.root.rightChild = new TwoFourTreeItem(70);
-
-    this.root.leftChild.isLeaf = false;
-    this.root.centerChild.isLeaf = false;
-    this.root.rightChild.isLeaf = false;
-
-    this.root.leftChild.parent = root;
-    this.root.centerChild.parent = root;
-    this.root.rightChild.parent = root;
-
-    this.root.leftChild.leftChild = new TwoFourTreeItem(5);
-    this.root.leftChild.rightChild = new TwoFourTreeItem(15);
-
-    this.root.leftChild.leftChild.parent = this.root.leftChild;
-    this.root.leftChild.rightChild.parent = this.root.leftChild;
-
-    this.root.centerChild.leftChild = new TwoFourTreeItem(35);
-    this.root.centerChild.rightChild = new TwoFourTreeItem(50);
-
-    this.root.centerChild.leftChild.parent = this.root.centerChild;
-    this.root.centerChild.rightChild.parent = this.root.centerChild;
-
-    this.root.rightChild.leftChild = new TwoFourTreeItem(65);
-    this.root.rightChild.rightChild = new TwoFourTreeItem(80);
-
-    this.root.rightChild.leftChild.parent = this.root.rightChild;
-    this.root.rightChild.rightChild.parent = this.root.rightChild;
-
-    printFromRoot();
-
-    System.out.println("---");
-
-    deleteValue(35);
-
-    System.out.println("---");
-
-    printFromRoot();
   }
 
   public TwoFourTree() {

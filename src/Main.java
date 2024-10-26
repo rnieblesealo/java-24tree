@@ -45,10 +45,6 @@ public class Main {
       tree.addValue(valuesToAdd[i]);
     }
 
-    tree.printFromRoot();
-
-    System.out.println("---");
-
     tree.deleteValue(4);
     tree.deleteValue(6);
     tree.deleteValue(5);
@@ -59,7 +55,5 @@ public class Main {
     tree.deleteValue(9);
     tree.deleteValue(1);
     tree.deleteValue(10);
-
-    tree.printFromRoot();
   }
 }
