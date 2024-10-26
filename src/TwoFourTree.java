@@ -773,7 +773,7 @@ public class TwoFourTree {
     }
 
     // Kill the root if it's a leaf 2-node
-    if (current.isRoot() && current.isLeaf){
+    if (current.isRoot() && current.isLeaf) {
       this.root = null;
       return;
     }
@@ -1086,51 +1086,100 @@ public class TwoFourTree {
     if (current.isRoot() || (current.parent.isRoot() && current.parent.isTwoNode())) {
       System.out.println("Couldn't borrow; merging root...");
 
-      // Push values to parent
-      current.value2 = current.parent.value1;
-      current.value3 = current.parent.rightChild.value1;
+      if (isLeftChild) {
+        // Push values to parent
+        current.value2 = current.parent.value1;
+        current.value3 = current.parent.rightChild.value1;
 
-      // This results in 2 new values
-      current.values += 2;
+        // This results in 2 new values
+        current.values += 2;
 
-      // Rebind children
-      current.centerLeftChild = current.rightChild;
-      current.centerChild = null;
+        // Rebind children
+        current.centerLeftChild = current.rightChild;
+        current.centerChild = null;
 
-      current.centerRightChild = current.parent.rightChild.leftChild;
-      current.rightChild = current.parent.rightChild.rightChild;
+        current.centerRightChild = current.parent.rightChild.leftChild;
+        current.rightChild = current.parent.rightChild.rightChild;
 
-      // Do links!
-      // Will this null?
-      // God I hope not
-      // I've been programming for 9 hours
-      // After a physics midterm...
-      // I just wanna go home...
-      if (current.leftChild != null) {
-        current.leftChild.parent = current;
+        // Do links!
+        // Will this null?
+        // God I hope not
+        // I've been programming for 9 hours
+        // After a physics midterm...
+        // I just wanna go home...
+        if (current.leftChild != null) {
+          current.leftChild.parent = current;
+        }
+
+        if (current.centerLeftChild != null) {
+          current.centerLeftChild.parent = current;
+        }
+
+        if (current.centerRightChild != null) {
+          current.centerRightChild.parent = current;
+        }
+
+        if (current.rightChild != null) {
+          current.rightChild.parent = current;
+        }
+
+        // Officialize
+        current.parent = null;
+        root = current;
+
+        printSingleNode("Result root", root);
+        System.out.println();
+
+        return;
       }
 
-      if (current.centerLeftChild != null) {
-        current.centerLeftChild.parent = current;
+      else if (isRightChild) {
+        // Push values to parent
+        current.value3 = current.value1;
+        current.value2 = current.parent.value1;
+        current.value1 = current.parent.leftChild.value1;
+
+        // This results in 2 new values
+        current.values += 2;
+
+        // Rebind children
+        current.centerRightChild = current.leftChild;
+        current.centerLeftChild = current.parent.leftChild.rightChild;
+        current.leftChild = current.parent.leftChild.leftChild;
+
+        current.centerChild = null; 
+
+        // Do links!
+        if (current.leftChild != null) {
+          current.leftChild.parent = current;
+        }
+
+        if (current.centerLeftChild != null) {
+          current.centerLeftChild.parent = current;
+        }
+
+        if (current.centerRightChild != null) {
+          current.centerRightChild.parent = current;
+        }
+
+        if (current.rightChild != null) {
+          current.rightChild.parent = current;
+        }
+
+        // Officialize
+        current.parent = null;
+        root = current;
+
+        printSingleNode("Result root", root);
+        System.out.println();
+
+        return;
       }
 
-      if (current.centerRightChild != null) {
-        current.centerRightChild.parent = current;
+      // Reach here if we're doing this from the root
+      else {
+
       }
-
-      if (current.rightChild != null) {
-        current.rightChild.parent = current;
-      }
-
-      // Officialize
-      current.parent = null;
-      root = current;
-
-      printSingleNode("Result root", root);
-      System.out.println();
-
-      // And done!
-      return;
     }
 
     // If merging with non-root parent isn't possible either, move up
