@@ -49,26 +49,16 @@ public class Main {
 
     System.out.println("---");
 
-    tree.deleteValue(10);
-    System.out.println("---");
-    tree.deleteValue(9);
-    System.out.println("---");
-    tree.deleteValue(8);
-    System.out.println("---");
-    tree.deleteValue(7);
-    System.out.println("---");
-    tree.deleteValue(6);
-    System.out.println("---");
-    tree.deleteValue(5);
-    System.out.println("---");
     tree.deleteValue(4);
-    System.out.println("---");
+    tree.deleteValue(6);
+    tree.deleteValue(5);
     tree.deleteValue(3);
-    System.out.println("---");
     tree.deleteValue(2);
-    System.out.println("---");
+    tree.deleteValue(8);
+    tree.deleteValue(7);
+    tree.deleteValue(9);
     tree.deleteValue(1);
-    System.out.println("---");
+    tree.deleteValue(10);
 
     tree.printFromRoot();
   }

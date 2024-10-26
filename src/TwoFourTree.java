@@ -1147,7 +1147,7 @@ public class TwoFourTree {
         current.centerLeftChild = current.parent.leftChild.rightChild;
         current.leftChild = current.parent.leftChild.leftChild;
 
-        current.centerChild = null; 
+        current.centerChild = null;
 
         // Do links!
         if (current.leftChild != null) {
@@ -1627,10 +1627,6 @@ public class TwoFourTree {
     }
   }
 
-  private TwoFourTreeItem getSuccessor(TwoFourTreeItem start, int key) {
-    return null;
-  }
-
   private int getKeyPosition(TwoFourTreeItem node, int key) {
     // Get the position of the given key in the node; if node doesn't exist or key
     // isn't in the node return -1
@@ -1653,6 +1649,32 @@ public class TwoFourTree {
 
     return -1;
 
+  }
+
+  private int searchKeyInLeaf(TwoFourTreeItem node, int key) {
+    // Return rightmost or leftmost key in a leaf
+
+    if (node == null) {
+      return -1;
+    }
+
+    if (node.isTwoNode()) {
+      return 1;
+    }
+
+    if (key < node.value1) {
+      return 1;
+    }
+
+    if (key > node.value2 && node.isThreeNode()) {
+      return 2;
+    }
+
+    if (key > node.value3 && node.isFourNode()) {
+      return 3;
+    }
+
+    return -1;
   }
 
   private boolean directDelete(TwoFourTreeItem current, int keyIndex) {
@@ -1698,6 +1720,33 @@ public class TwoFourTree {
     }
 
     return false;
+
+  }
+
+  public TwoFourTreeItem getSuccessor(TwoFourTreeItem start, int key) {
+    // Get either smallest or largest inorder successor
+
+    TwoFourTreeItem current;
+
+    if (start.leftChild == null) {
+      current = start.rightChild;
+
+      while (current.leftChild != null) {
+        current = current.leftChild;
+      }
+
+      return current;
+    }
+
+    else {
+      current = start.leftChild;
+
+      while (current.rightChild != null) {
+        current = current.rightChild;
+      }
+
+      return current;
+    }
 
   }
 
@@ -1760,10 +1809,63 @@ public class TwoFourTree {
 
     // Will reach here if deletion key has been found, print it!
 
+    // Get position of the key we're trying to delete in the current node
+    int keyIndex = getKeyPosition(current, value);
+
     printSingleNode("Found deletion target", current);
     System.out.println();
 
-    int keyIndex = getKeyPosition(current, value);
+    // If not leaf, do successor
+    if (!current.isLeaf) {
+      TwoFourTreeItem successor = getSuccessor(current, value);
+      printSingleNode("Successor", successor);
+      System.out.println();
+
+      // Get the successor key, value, and tag the place it was at with a new delete
+      // key
+      // -2 is special value to mark an underflowed node
+      int successorKey = -1;
+      int successorKeyIndex = searchKeyInLeaf(successor, value);
+
+      switch (successorKeyIndex) {
+        case 1:
+          successorKey = successor.value1;
+          successor.value1 = -2;
+          break;
+        case 2:
+          successorKey = successor.value2;
+          successor.value2 = -2;
+          break;
+        case 3:
+          successorKey = successor.value3;
+          successor.value3 = -2;
+          break;
+      }
+
+      System.out.printf("Successor key, index: %d %d\n", successorKey, successorKeyIndex);
+
+      // Replace current for the successor key's value
+      switch (keyIndex) {
+        case 1:
+          current.value1 = successorKey;
+          break;
+        case 2:
+          current.value2 = successorKey;
+          break;
+        case 3:
+          current.value3 = successorKey;
+          break;
+      }
+
+      printSingleNode("Current after swap", current);
+
+      // Change deletion target to symbolic value and move to successor
+      value = successor.value1;
+      keyIndex = successorKeyIndex;
+      current = successor;
+
+      System.out.println("Moving to successor...");
+    }
 
     // Try direct delete once...
     boolean didDirectDelete = directDelete(current, keyIndex);
@@ -1796,7 +1898,7 @@ public class TwoFourTree {
 
   // Helper
 
-  private void printSingleNode(String identifier, TwoFourTreeItem item) {
+  public void printSingleNode(String identifier, TwoFourTreeItem item) {
     if (item == null) {
       System.out.printf("%s : ", identifier);
       return;
