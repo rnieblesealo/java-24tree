@@ -772,12 +772,6 @@ public class TwoFourTree {
       return;
     }
 
-    // Kill the root if it's a leaf 2-node
-    if (current.isRoot() && current.isLeaf){
-      this.root = null;
-      return;
-    }
-
     System.out.print("Trying to merge");
     printSingleNode(" this node", current);
     System.out.println("...");
@@ -1081,59 +1075,7 @@ public class TwoFourTree {
 
     // Get here if couldn't borrow
 
-    // Try special merge with 2-node root first...
-
-    if (current.isRoot() || (current.parent.isRoot() && current.parent.isTwoNode())) {
-      System.out.println("Couldn't borrow; merging root...");
-
-      // Push values to parent
-      current.value2 = current.parent.value1;
-      current.value3 = current.parent.rightChild.value1;
-
-      // This results in 2 new values
-      current.values += 2;
-
-      // Rebind children
-      current.centerLeftChild = current.rightChild;
-      current.centerChild = null;
-
-      current.centerRightChild = current.parent.rightChild.leftChild;
-      current.rightChild = current.parent.rightChild.rightChild;
-
-      // Do links!
-      // Will this null?
-      // God I hope not
-      // I've been programming for 9 hours
-      // After a physics midterm...
-      // I just wanna go home...
-      if (current.leftChild != null) {
-        current.leftChild.parent = current;
-      }
-
-      if (current.centerLeftChild != null) {
-        current.centerLeftChild.parent = current;
-      }
-
-      if (current.centerRightChild != null) {
-        current.centerRightChild.parent = current;
-      }
-
-      if (current.rightChild != null) {
-        current.rightChild.parent = current;
-      }
-
-      // Officialize
-      current.parent = null;
-      root = current;
-
-      printSingleNode("Result root", root);
-      System.out.println();
-
-      // And done!
-      return;
-    }
-
-    // If merging with non-root parent isn't possible either, move up
+    // If merging with parent isn't possible either, move up
     if (!parent.isThreeNode() && !parent.isFourNode()) {
       printSingleNode("This node", current);
       System.out.print(" cannot merge with its ");
@@ -1147,7 +1089,7 @@ public class TwoFourTree {
     printSingleNode("parent", parent);
     System.out.println();
 
-    // Need to update these! They might've been moved around
+    // These might've been moved around
     isLeftChild = current == parent.leftChild;
     isCenterChild = current == parent.centerChild;
     isCenterLeftChild = current == parent.centerLeftChild;
@@ -1155,6 +1097,7 @@ public class TwoFourTree {
     isRightChild = current == parent.rightChild;
 
     // Siblings too?
+
     if (parent.isTwoNode()) {
       if (isLeftChild) {
         rightSibling = parent.rightChild;
@@ -1201,9 +1144,37 @@ public class TwoFourTree {
       }
     }
 
+    else if (current.parent.isRoot()) {
+      System.out.println("Merging root...");
+
+      // Push values to parent
+      current.value2 = current.parent.value1;
+      current.value3 = current.parent.rightChild.value3;
+
+      // This results in 2 new values
+      current.values += 2;
+
+      // Rebind children
+      current.centerLeftChild = current.centerChild;
+      current.centerChild = null;
+
+      current.centerRightChild = current.parent.rightChild.leftChild;
+      current.rightChild = current.parent.rightChild.rightChild;
+
+      // Officialize
+      root = current;
+
+      printSingleNode("Result root", root);
+      System.out.println();
+
+      // And done!
+      return;
+    }
+
     // Two-node leaves have special merge cases; we're overwriting the value,
     // effectively deleting it
-    if (current.isLeaf && parent.isThreeNode()) {
+
+    else if (current.isLeaf && parent.isThreeNode()) {
       if (isLeftChild) {
         // Overwrite value with parent's leftmost
         current.value1 = parent.value1;
@@ -1379,9 +1350,9 @@ public class TwoFourTree {
       }
     }
 
-    // If we get here, we're merging an inner node
+    // And if we get here, we're merging an inner node
 
-    if (parent.isThreeNode()) {
+    else if (parent.isThreeNode()) {
       if (isLeftChild) {
         // Borrow parent-facing value
         current.value2 = parent.value1;
@@ -1469,6 +1440,8 @@ public class TwoFourTree {
 
     else if (parent.isFourNode()) {
       if (isLeftChild) {
+        System.out.println("Correct case");
+
         // Borrow parent-facing value
         current.value2 = parent.value1;
 
@@ -1606,64 +1579,14 @@ public class TwoFourTree {
 
   }
 
-  private boolean directDelete(TwoFourTreeItem current, int keyIndex) {
-    if (current.isThreeNode()) {
-      switch (keyIndex) {
-        case 1:
-          current.value1 = current.value2;
-          current.value2 = -1;
-          break;
-        case 2:
-          current.value2 = -1;
-          break;
-      }
-
-      // Shrink the leaf
-      current.values--;
-
-      // Deletion done!
-      return true;
-    }
-
-    if (current.isFourNode()) {
-      switch (keyIndex) {
-        case 1:
-          current.value1 = current.value2;
-          current.value2 = current.value3;
-          current.value3 = -1;
-          break;
-        case 2:
-          current.value2 = current.value3;
-          current.value3 = -1;
-          break;
-        case 3:
-          current.value3 = -1;
-          break;
-      }
-
-      // Shrink the leaf
-      current.values--;
-
-      // Deletion done!
-      return true;
-    }
-
-    return false;
-
-  }
-
   public boolean deleteValue(int value) {
     // Look for the key
     TwoFourTreeItem current = this.root;
-
     while (getKeyPosition(current, value) == -1) {
-
-      printSingleNode("Traverse at", current);
-      System.out.println();
 
       if (current == null) {
         System.out.println("Did not find deletion target!");
-        return false;
+        return true;
       }
 
       if (current.isTwoNode()) {
@@ -1710,38 +1633,69 @@ public class TwoFourTree {
     }
 
     // Will reach here if deletion key has been found, print it!
-
     printSingleNode("Found deletion target", current);
     System.out.println();
 
+    // Now we're cooking...
+
     int keyIndex = getKeyPosition(current, value);
 
-    // Try direct delete once...
-    boolean didDirectDelete = directDelete(current, keyIndex);
-    if (didDirectDelete) {
-      return true;
-    }
-
-    // If it didn't work, try to merge.
-    // If the key still exists after the merge, try direct deletion again
-
     if (current.isLeaf) {
+
+      // Easiest pair of cases; we can directly delete from leaves that aren't 2-nodes
+
+      if (current.isThreeNode()) {
+        switch (keyIndex) {
+          case 1:
+            current.value1 = current.value2;
+            current.value2 = -1;
+            break;
+          case 2:
+            current.value2 = -1;
+            break;
+        }
+
+        // Shrink the leaf
+        current.values--;
+
+        // Deletion done!
+        return true;
+      }
+
+      if (current.isFourNode()) {
+        switch (keyIndex) {
+          case 1:
+            current.value1 = current.value2;
+            current.value2 = current.value3;
+            current.value3 = -1;
+            break;
+          case 2:
+            current.value2 = current.value3;
+            current.value3 = -1;
+            break;
+          case 3:
+            current.value3 = -1;
+            break;
+        }
+
+        // Shrink the leaf
+        current.values--;
+
+        // Deletion done!
+        return true;
+      }
+
+      // If our leaf is a two-node, we need to merge with the top so we can turn it
+      // into a node that we can delete from
+
       if (current.isTwoNode()) {
         merge(current);
 
-        keyIndex = getKeyPosition(current, value);
-
-        // If value not found it was deleted!
-        if (keyIndex == -1) {
-          return true;
-        }
-
-        // Otherwise we need to try direct delete again
-        return directDelete(current, keyIndex);
+        return true;
       }
+
     }
 
-    // Fallback to false
     return false;
   }
 

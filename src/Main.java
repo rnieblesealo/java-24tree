@@ -32,33 +32,46 @@ public class Main {
   public static void main(String[] args) {
     TwoFourTree tree = new TwoFourTree();
     
-    /*
     // Make a random tree
+    /*
     int amtValuesToAdd = 10;
     int[] valuesToAdd =
         generateUniqueArray(amtValuesToAdd, 0, 2 * amtValuesToAdd);
+    */
 
-    // int[] valuesToAdd = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int[] valuesToAdd = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     for (int i = 0; i < valuesToAdd.length; ++i) {
       tree.addValue(valuesToAdd[i]);
     }
 
-    // tree.printInOrder();
     tree.printFromRoot();
 
-    // Perform some random checks
+    System.out.println("---");
 
-    Random random = new Random();
+    tree.deleteValue(1);
+    System.out.println("---");
+    tree.deleteValue(2);
+    System.out.println("---");
+    tree.deleteValue(3);
+    System.out.println("---");
+    tree.deleteValue(4);
+    System.out.println("---");
+    tree.deleteValue(5);
+    System.out.println("---");
+    tree.deleteValue(6);
+    System.out.println("---");
+    tree.deleteValue(7);
+    System.out.println("---");
+    tree.deleteValue(8);
+    System.out.println("---");
+    tree.deleteValue(9);
+    System.out.println("---");
+    tree.deleteValue(10);
+    System.out.println("---");
 
-    int testsAmt = 24;
-    int testsMaxBound = valuesToAdd.length + 32;
+    System.out.println("---");
 
-    for (int i = 0; i < testsAmt; ++i) {
-      int randomCheck = random.nextInt(0, testsMaxBound);
-      System.out.println("Is " + randomCheck +
-                         " in? : " + tree.hasValue(randomCheck));
-    }
-    */
+    tree.printFromRoot();
   }
 }
